@@ -23,3 +23,6 @@ main{max-width:1168px;padding:28px 32px 115px;margin:auto}.home-main{max-width:1
 @media(max-width:360px){.brand{font-size:15px}.brand-name{max-width:132px}.brand-mark{width:32px;height:32px}.header-inner{gap:6px}.history-open{font-size:12px;padding-left:2px;gap:4px}.history-open svg{width:17px}.tool-card h2{font-size:19px}.page-heading h1{font-size:25px}}
 
 .developer-credit{display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:8px;width:fit-content;max-width:100%;margin:32px auto 0;padding:3px 14px;background:#fff;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:12px;line-height:1.4}.developer-credit span{white-space:nowrap}.developer-credit img{display:block;width:113px;height:50px;object-fit:contain;flex:none}@media(max-width:600px){.developer-credit{margin-top:24px;font-size:11px;padding:2px 12px}}
+
+/* Display the Raven symbol from the original supplied wordmark. */
+.raven-brand-mark{background:transparent;border-radius:50%;overflow:hidden;flex:none}.raven-brand-mark svg{width:100%;height:100%}
