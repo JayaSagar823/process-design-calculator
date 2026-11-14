@@ -2,7 +2,7 @@
 
 **[Open the live calculator](https://calculator.startraven.com/)** · [Deployment history](https://github.com/JayaSagar823/process-design-calculator/actions)
 
-Mobile-friendly Steam Properties and Ammonia Saturation Condition, based on the version 17 app. Includes calculation history, result exports, install controls, and offline use after the first complete online visit.
+Mobile-friendly Steam Properties, Ammonia Saturation Condition, and CO₂ Emissions, based on the version 17 app. Includes calculation history, result exports, install controls, and offline use after the first complete online visit.
 
 ## Publish new changes
 
@@ -35,6 +35,7 @@ Run `npm run build`, then `python3 -m http.server 8080 --directory _site`. Open 
 - `dist/index.html`: tool chooser.
 - `dist/steam/index.html`, `dist/app.js`: steam calculator interface.
 - `dist/ammonia/`: ammonia interface, table, and interpolation logic.
+- `dist/co2/`: CO₂ emissions interface, original calculation model, history, and reports.
 - `dist/style.css`, `dist/shell.js`: shared design, navigation, and installation controls.
 - `dist/engine/`: existing CoolProp WebAssembly and calculation engine.
 - `dist/sw.js`, `dist/manifest.webmanifest`: offline use and app installation.
@@ -42,3 +43,9 @@ Run `npm run build`, then `python3 -m http.server 8080 --directory _site`. Open 
 - `.github/workflows/pages.yml`: tests and deployment.
 
 The original calculator engines and data are preserved. CoolProp's bundled license is in `dist/engine/LICENSE-CoolProp.txt`.
+
+## CO₂ emissions model
+
+The CO₂ model and editable default factors are preserved from the supplied [CO₂ Emissions Calculator](https://co2-emissions-js-1115.sagar610340.chatgpt.site/) (source version 5, commit `2b778806715a057d860fcbd3ad61f3e201f5c7b0`). It reports turbine CO₂, specific ammonia-plant energy, and specific plant CO₂. Steam export subtracts an allocation credit; import adds a burden. The model uses 4.187 kJ/kcal and does not deduct recovered or stored CO₂. Default emission factors remain editable assumptions, not a claim of current regulatory compliance.
+
+`co2.test.mjs` checks the original example, import/export, units, factor edits, invalid readings, history validation, and report output. Calculation history stays on the current browser and is limited to the latest 10 entries.

@@ -2,7 +2,7 @@
   "id": "./",
   "name": "ProcessCalc",
   "short_name": "ProcessCalc",
-  "description": "Steam Properties and Ammonia Saturation Condition.",
+  "description": "Steam Properties, Ammonia Saturation Condition, and CO₂ Emissions.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -36,6 +36,10 @@
     {
       "name": "Ammonia Saturation Condition",
       "url": "./ammonia/"
+    },
+    {
+      "name": "CO₂ Emissions",
+      "url": "./co2/"
     }
   ]
 }
