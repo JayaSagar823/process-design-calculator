@@ -1,6 +1,6 @@
-# Process Design Calculator
+# ProcessCalc
 
-**[Open the live calculator](https://jayasagar823.github.io/process-design-calculator/)** · [Deployment history](https://github.com/JayaSagar823/process-design-calculator/actions)
+**[Open the live calculator](https://calculator.startraven.com/)** · [Deployment history](https://github.com/JayaSagar823/process-design-calculator/actions)
 
 Mobile-friendly Steam Properties and Ammonia Saturation Condition, based on the version 17 app. Includes calculation history, result exports, install controls, and offline use after the first complete online visit.
 

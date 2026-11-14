@@ -76,7 +76,7 @@ export function setupInstall({document,window,navigator,appURL}) {
       const label=isInstalled?'App info':environment==='samsung'?'Install with Chrome':'Install app';
       button.setAttribute('aria-label',label);button.title=label;
     });
-    $('install-title').textContent=isInstalled?'Process Design Calculator':guide.title;
+    $('install-title').textContent=isInstalled?'ProcessCalc':guide.title;
     $('install-description').textContent=isInstalled?'You’re using the installed app. Open it from your home screen, Dock or app launcher.':guide.description;
     $('install-instructions').hidden=isInstalled;
     native.hidden=!nativeAllowed||!installPrompt||isInstalled;
@@ -90,7 +90,7 @@ export function setupInstall({document,window,navigator,appURL}) {
   window.addEventListener('appinstalled',()=>{
     installPrompt=null;
     update();
-    status.textContent='Process Design Calculator is installed.';
+    status.textContent='ProcessCalc is installed.';
   });
   document.querySelectorAll('[data-install]').forEach(button=>button.addEventListener('click',()=>{
     status.textContent='';update();$('install-dialog').showModal();
