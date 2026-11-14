@@ -25,7 +25,7 @@ export function createReport(snapshot){
  if(result.phase==='Supercritical fluid')notes.push('Vapor fraction is not defined for supercritical fluid.');
  if(result.saturation&&result.P>=22.064e6)notes.push('Saturation temperature is not defined at or above critical pressure.');
  if(result.saturation&&result.T>=647.096)notes.push('Saturation pressure is not defined at or above critical temperature.');
- const text=['Steam Properties Calculator',`State: ${phaseName(result)}`,`Calculated: ${at}`,'Method: IAPWS-IF97',...['Input','Output','Saturation'].flatMap(section=>{
+ const text=['Steam Properties',`State: ${phaseName(result)}`,`Calculated: ${at}`,'Method: IAPWS-IF97',...['Input','Output','Saturation'].flatMap(section=>{
   const sectionRows=rows.filter(row=>row[0]===section);
   return sectionRows.length?['',section.toUpperCase(),...sectionRows.map(([,label,n,u])=>`${label}: ${n}${u==='—'?'':` ${u}`}`)]:[];
  }),...['','Notes',...notes]].join('\n');

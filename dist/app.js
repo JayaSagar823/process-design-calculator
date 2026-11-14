@@ -198,6 +198,6 @@ $('share-copy').onclick=async()=>{
 };
 
 $('share-native').onclick=async()=>{
- try{await navigator.share({title:'Steam Properties Calculator results',text:$('share-report').value});}
+ try{await navigator.share({title:'Steam Properties results',text:$('share-report').value});}
  catch(error){if(error.name!=='AbortError')$('share-status').textContent='Sharing is unavailable here. Use Copy report instead.';}
 };

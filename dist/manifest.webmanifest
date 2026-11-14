@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Process Design Calculator",
   "short_name": "Process Design Calculator",
-  "description": "Steam Properties Calculator and Ammonia Saturation Condition.",
+  "description": "Steam Properties and Ammonia Saturation Condition.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -30,7 +30,7 @@
   ],
   "shortcuts": [
     {
-      "name": "Steam Properties Calculator",
+      "name": "Steam Properties",
       "url": "./steam/"
     },
     {
