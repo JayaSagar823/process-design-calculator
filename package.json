@@ -1,0 +1,11 @@
+{
+  "name": "process-design-calculator",
+  "version": "17.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test test.mjs units.test.mjs history.test.mjs report.test.mjs saturation.test.mjs hosting.test.mjs",
+    "build": "node scripts/build.mjs"
+  }
+}
