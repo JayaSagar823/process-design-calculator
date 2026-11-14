@@ -21,7 +21,7 @@ function options(k){return units[k].map((u,i)=>`<option value="${i}" ${i===unit[
 function complete(){return selected.length===2&&selected.every(k=>Number.isFinite(values[k]));}
 function controls(){
  $('calculate').disabled=!ready||busy||!complete();
- $('calculate').textContent=busy?'Calculating…':'Calculate properties';
+ $('calculate').textContent=busy?'Calculating…':'Calculate';
  $('input-status').textContent=loadError?'Calculator unavailable. Please reload.':!ready?'Preparing calculator…':busy?'Calculating properties…':'';
  $('input-status').hidden=!$('input-status').textContent;
 }

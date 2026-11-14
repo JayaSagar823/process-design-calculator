@@ -13,7 +13,7 @@ main{max-width:1168px;padding:28px 32px 115px;margin:auto}.home-main{max-width:1
 @media(max-width:360px){main{padding-left:12px;padding-right:12px}.header-inner{padding-left:15px;padding-right:15px}.home-heading h1{font-size:32px}.tool-card{padding:19px 16px;column-gap:11px;grid-template-columns:42px minmax(0,1fr) 16px}.tool-card .tool-symbol{width:42px;height:42px}.tool-card h2{font-size:20px}.panel{padding:18px 13px}.output-value-cell strong{font-size:18px}.result-item select{font-size:14px}.copy-value{width:38px;min-width:38px}.input-value-cell input{padding-right:40px}.input-row select{font-size:16px}.home-footnote{font-size:12px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
-.signed-input{position:relative;min-width:0}.signed-input input{padding-right:46px}#toggle-sign{position:absolute;right:3px;top:4px;width:44px;height:44px;padding:0;background:#f5f3f9;color:var(--accent);border-radius:7px;font-size:22px;font-weight:400}@media(max-width:600px){.result-item select{font-size:16px}}
+@media(max-width:600px){.result-item select{font-size:16px}}
 
 .skip-link:not(:focus){clip-path:inset(50%);width:1px;height:1px;overflow:hidden;white-space:nowrap}.app-header{position:sticky;top:0;z-index:25}#input-panel,#output-panel{scroll-margin-top:105px}
 
