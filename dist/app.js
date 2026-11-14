@@ -81,7 +81,6 @@ function loadSaturationReferences(){
 }
 function renderResult(){
  $('result-empty').hidden=!!result; $('results').hidden=!result;
- $('results-link').setAttribute('aria-disabled',String(!result));
  const vapor=result?.phase==='Superheated vapor',liquid=result?.phase==='Compressed liquid';
  const shown=result?{...result,Q:vapor?1:liquid?0:result.Q}:null;
  $('result-actions').hidden=!result;
@@ -104,14 +103,8 @@ function savedUnit(entry,key){return units[key].find(u=>u.label===entry.units[ke
 function savedValue(entry,key,value){return value===null?'N/A':resultFormat(fromSI(value,savedUnit(entry,key)));}
 function savedOutputs(entry){return {...entry.result,Q:entry.result.phase==='Superheated vapor'?1:entry.result.phase==='Compressed liquid'?0:entry.result.Q};}
 function dateLabel(entry){return new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'medium'}).format(new Date(entry.createdAt));}
-function updateHistoryCount(){$('history-count').textContent=historyStore.list().length;renderRecentCalculations();}
+function updateHistoryCount(){$('history-count').textContent=historyStore.list().length;}
 function openHistory(id=null){historyEntryId=id;renderHistory();$('history-dialog').showModal();}
-function renderRecentCalculations(){
- const entries=historyStore.list().slice(0,3);
- const container=$('recent-calculations');
- container.innerHTML=entries.length?entries.map((entry,index)=>`<button type="button" class="history-card recent-card" data-recent-index="${index}"><span class="history-card-top"><strong>${phaseLabel(entry.result)}</strong><span>View →</span></span><time>${dateLabel(entry)}</time><span class="history-inputs">${Object.entries(entry.inputs).map(([k,v])=>`${labels[k]}: ${savedValue(entry,k,v)} ${savedUnit(entry,k).label}`).join(' · ')}</span></button>`).join(''):'<p class="recent-empty">Your latest 3 calculations will appear here.</p>';
- container.querySelectorAll('[data-recent-index]').forEach(button=>button.onclick=()=>openHistory(entries[Number(button.dataset.recentIndex)].id));
-}
 
 function saveCalculation(){
  const entry={id:crypto.randomUUID(),createdAt:resultCreatedAt,inputs:Object.fromEntries(selected.map(k=>[k,values[k]])),units:Object.fromEntries(Object.keys(units).map(k=>[k,units[k][unit[k]].label])),result:structuredClone(result)};
@@ -161,7 +154,6 @@ $('history-clear-confirmed').onclick=()=>{
  toast(historyPersistent?'History cleared':'Cleared for this session only. Browser storage is unavailable.');
 };
 $('history-open').onclick=()=>openHistory();
-$('recent-view-all').onclick=()=>openHistory();
 $('history-close').onclick=()=>$('history-dialog').close();
 updateHistoryCount();
 
@@ -170,7 +162,7 @@ function currentSnapshot(){
  return {createdAt:resultCreatedAt,inputs:Object.fromEntries(selected.map(k=>[k,values[k]])),units:Object.fromEntries(Object.keys(units).map(k=>[k,units[k][unit[k]].label])),result};
 }
 function exportActions(disabled=false){
- return `<div class="export-actions"><button type="button" data-export-share ${disabled?'disabled':''}>Share results</button><button type="button" data-export-download aria-expanded="false" ${disabled?'disabled':''}>Download <span aria-hidden="true">↓</span></button><div class="export-menu" hidden><button type="button" data-export-file="csv">CSV spreadsheet <small>Open in Excel</small></button><button type="button" data-export-file="txt">Text report <small>All values and units</small></button></div></div>`;
+ return `<div class="export-actions"><button type="button" class="action-icon" aria-label="Share results" title="Share results" data-export-share ${disabled?'disabled':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m-4 4 4-4 4 4M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button><button type="button" class="action-icon" aria-label="Download results" title="Download results" data-export-download aria-expanded="false" ${disabled?'disabled':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg></button><div class="export-menu" hidden><button type="button" data-export-file="csv">CSV spreadsheet <small>Open in Excel</small></button><button type="button" data-export-file="txt">Text report <small>All values and units</small></button></div></div>`;
 }
 function bindExportActions(parent,getSnapshot){
  parent.querySelector('[data-export-share]').onclick=()=>{const snapshot=getSnapshot();if(snapshot)shareResults(snapshot);};
