@@ -41,6 +41,7 @@ try {
     const prefix = 'process-design:' + base + ':';
     vm.runInNewContext(sw, {
       URL,
+      Request,
       self: {
         location: new URL(origin + base + 'sw.js'),
         addEventListener: (name, handler) => { events[name] = handler; },
@@ -48,7 +49,7 @@ try {
         clients: { claim: async () => {} },
       },
       caches: {
-        open: async name => { currentCache = name; return { addAll: async paths => { cachedPaths = paths; }, match: async () => 'cached response' }; },
+        open: async name => { currentCache = name; return { addAll: async requests => { assert.ok(requests.every(request => request.cache === 'reload'), 'New offline caches must bypass stale HTTP assets'); cachedPaths = requests.map(request => new URL(request.url).pathname); }, match: async () => 'cached response' }; },
         keys: async () => [prefix + 'old', prefix + first.version, 'unrelated-app-cache'],
         delete: async name => { deleted.push(name); },
       },
