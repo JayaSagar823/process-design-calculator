@@ -1,12 +1,6 @@
+import {setupInstall} from './install.mjs';
 const $=id=>document.getElementById(id);
-let installPrompt=null;
-const installed=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
-function updateInstall(){document.querySelectorAll('[data-install]').forEach(button=>{const label=installed()?'App info':'Install app';button.setAttribute('aria-label',label);button.title=label;});$('install-native').hidden=!installPrompt||installed();}
-addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;updateInstall();});
-addEventListener('appinstalled',()=>{installPrompt=null;updateInstall();$('install-status').textContent='Process Design Calculator is installed. Open it from your home screen.';});
-async function promptInstall(){if(!installPrompt)return;try{await installPrompt.prompt();const {outcome}=await installPrompt.userChoice;$('install-status').textContent=outcome==='accepted'?'Installation accepted. Your browser will add Process Design Calculator to your apps.':'Installation cancelled. You can install it later.';}catch{$('install-status').textContent='Use your browser menu to add Process Design Calculator to your home screen.';}finally{installPrompt=null;updateInstall();}}
-document.querySelectorAll('[data-install]').forEach(button=>button.addEventListener('click',()=>{$('install-status').textContent=installed()?'You are using the installed Process Design Calculator app.':'';$('install-instructions').hidden=installed();updateInstall();$('install-dialog').showModal();}));
-$('install-native').onclick=promptInstall;$('install-close').onclick=()=>$('install-dialog').close();updateInstall();
+setupInstall({document,window,navigator,appURL:new URL('./',import.meta.url).href});
 const reduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 addEventListener('fieldkit:result',()=>{const output=$('output-panel');output?.focus({preventScroll:true});if(matchMedia('(max-width:900px)').matches)output?.scrollIntoView({behavior:reduce()?'instant':'smooth',block:'start'});});
 let offlineReady=false;
