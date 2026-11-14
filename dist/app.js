@@ -27,7 +27,6 @@ function controls(){
 }
 function syncInputState(){
  selected=keys.filter(k=>(draft[k]??'').trim()!=='');
- $('count').textContent=`${selected.length} / 2 entered`;
  keys.forEach(k=>{
   const filled=selected.includes(k),locked=!filled&&selected.length>=2;
   $('value-'+k).disabled=locked;
