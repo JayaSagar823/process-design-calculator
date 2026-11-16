@@ -64,12 +64,12 @@ test('CO₂ exports include all readings, assumptions, selected units, and match
   const saved = record(); saved.units.power = 'kW'; saved.outUnits.turbineCO2 = 'kgCO₂/h';
   const rows = reportRows(saved);
   assert.deepEqual(rows.find(row => row[0] === 'Turbine power output').slice(0, 3), ['Turbine power output', 25000, 'kW']);
-  assert.deepEqual(rows.find(row => row[0] === 'Turbine CO₂ emissions').slice(0, 3), ['Turbine CO₂ emissions', 18250, 'kgCO₂/h']);
+  assert.deepEqual(rows.find(row => row[0] === 'CO₂ emissions from power generation').slice(0, 3), ['CO₂ emissions from power generation', 18250, 'kgCO₂/h']);
   for (const field of fields) assert.ok(rows.some(row => row[0] === field[1]));
   assert.match(reportText(saved), /Specific plant CO₂ \| 1\.625797/);
   assert.match(reportText(saved), /Steam direction \| export/);
   const csv = reportCSV(saved);
   assert.ok(csv.startsWith('\uFEFF'));
-  assert.match(csv, /"Turbine CO₂ emissions","18250","kgCO₂\/h"/);
+  assert.match(csv, /"CO₂ emissions from power generation","18250","kgCO₂\/h"/);
   assert.match(csv, /\r\n/);
 });

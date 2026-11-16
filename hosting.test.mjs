@@ -13,6 +13,9 @@ try {
   assert.equal(first.version, second.version, 'Unchanged builds must keep their cache version');
   const sw = await readFile(join(output, 'sw.js'), 'utf8');
   assert.ok(!sw.includes('v17-source'), 'Build must stamp an asset-derived cache version');
+  const updates=await readFile(join(output,'updates.mjs'),'utf8');
+  assert.ok(updates.includes(`export const APP_VERSION='${first.version}';`),'Page and worker must share a release version');
+  assert.ok(!updates.includes('v17-source'));
   for (const base of ['/', '/process-design-calculator/']) {
     const origin = 'https://example.github.io';
     async function exists(path) {
@@ -60,11 +63,16 @@ try {
     await operation;
     assert.equal(currentCache, prefix + first.version);
     assert.ok(cachedPaths.includes(base + 'engine/coolprop.wasm'));
+    assert.ok(cachedPaths.includes(base + 'updates.mjs'),'Update notices must be available in the offline app');
     for (const path of ['co2/', 'co2/index.html', 'co2/app.js', 'co2/calc.js', 'co2/records.js']) assert.ok(cachedPaths.includes(base + path), 'CO₂ asset must work offline: ' + path);
     for (const path of cachedPaths) await exists(path);
     events.activate({ waitUntil: promise => { operation = promise; } });
     await operation;
     assert.deepEqual(deleted, [prefix + 'old'], 'Keep other apps and the current cache');
+    let announced;
+    events.message({data:{type:'PROCESSCALC_VERSION'},source:{postMessage:message=>{announced=message;}}});
+    assert.equal(announced.version,first.version,'Installed pages can detect a newer active cache');
+    assert.equal(announced.type,'PROCESSCALC_VERSION');
     let response;
     events.fetch({ request: { method: 'GET', url: origin + base + 'steam/?check=1' }, respondWith: promise => { response = promise; } });
     assert.equal(await response, 'cached response');

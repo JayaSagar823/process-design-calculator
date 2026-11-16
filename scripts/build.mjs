@@ -35,6 +35,11 @@ export async function build(destination = '_site') {
   const marker = "const CACHE=CACHE_PREFIX+'v17-source';";
   if (!sw.includes(marker)) throw new Error('Missing service-worker build marker.');
   await writeFile(swPath, sw.replace(marker, `const CACHE=CACHE_PREFIX+'${version}';`));
+  const updatesPath=join(output,'updates.mjs');
+  const updates=await readFile(updatesPath,'utf8');
+  const updatesMarker="export const APP_VERSION='v17-source';";
+  if(!updates.includes(updatesMarker))throw new Error('Missing app update build marker.');
+  await writeFile(updatesPath,updates.replace(updatesMarker,`export const APP_VERSION='${version}';`));
   await writeFile(join(output, '.nojekyll'), '');
   return { output, version, files: files.length };
 }

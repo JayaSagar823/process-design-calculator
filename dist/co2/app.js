@@ -65,7 +65,7 @@ fields.forEach(([id, name, , options, note], i) => {
     const hint = el('p', note); hint.className = 'hint'; hint.id = id + '-hint';
     input.setAttribute('aria-describedby', hint.id); row.append(hint);
   }
-  $(i < 3 ? 'turbine-inputs' : i < 8 ? 'plant-inputs' : 'assumption-fields').append(row);
+  $(id === 'power' ? 'turbine-inputs' : i < 8 ? 'plant-inputs' : 'assumption-fields').append(row);
 });
 
 function persist() {

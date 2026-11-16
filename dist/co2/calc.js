@@ -14,7 +14,7 @@ export const fields=[
 ['steamFactor','Steam CO₂ allowance',.18,{'tCO₂/t steam':1,'kgCO₂/t steam':1000,'kgCO₂/kg steam':1},'CO₂ burden or credit per tonne of steam.']];
 export const outputs=[
 ['specificGas','Specific gas consumption',{'Nm³/kWh':1,'Nm³/MWh':1000},'Heat rate divided by LHV.'],
-['turbineCO2','Turbine CO₂ emissions',{'tCO₂/h':1,'kgCO₂/h':1000,'tCO₂/day':24},'Turbine power multiplied by the electricity factor.'],
+['turbineCO2','CO₂ emissions from power generation',{'tCO₂/h':1,'kgCO₂/h':1000,'tCO₂/day':24},'Turbine power multiplied by the electricity factor.'],
 ['specificEnergy','Specific plant energy',{'Gcal/t NH₃':1,'GJ/t NH₃':4.187,'MJ/kg NH₃':4.187,'kcal/kg NH₃':1000},'Net energy divided by ammonia production.'],
 ['specificCO2','Specific plant CO₂',{'tCO₂/t NH₃':1,'kgCO₂/t NH₃':1000,'kgCO₂/kg NH₃':1},'Net allocated CO₂ divided by ammonia production.'],
 ['netEnergy','Net plant energy',{'Gcal/h':1,'GJ/h':4.187,'MW thermal':4.187/3.6},'Gas plus power energy, adjusted for steam.'],

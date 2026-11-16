@@ -15,7 +15,7 @@ Mobile-friendly Steam Properties, Ammonia Saturation Condition, and CO₂ Emissi
 
 You can also publish by committing directly to `main`. Failed checks stop deployment; the previously published site stays live. To undo a release, revert its commit and push the revert to `main`.
 
-The build gives the service worker a new cache version whenever an app file changes. Open the site online to receive an update, then close and reopen it. History is stored in each browser and is not shared across devices or domains.
+The build gives the service worker a new cache version whenever an app file changes. Open the site online to receive updates. The shared shell checks on launch, when returning to the app, when connectivity returns, and once per minute while visible. When a fully cached update becomes active, an “Update available” notice offers “Update now” or “Later”; a header icon keeps it accessible after postponing. Updates do not reload an active calculation automatically. The update button reloads the current route and preserves saved history, but clears current readings. Older installations without the update notice may need to close and reopen once while online to load this release. History is stored in each browser and is not shared across devices or domains.
 
 ## One-time GitHub setup
 
@@ -49,3 +49,5 @@ The original calculator engines and data are preserved. CoolProp's bundled licen
 The CO₂ model and editable default factors are preserved from the supplied [CO₂ Emissions Calculator](https://co2-emissions-js-1115.sagar610340.chatgpt.site/) (source version 5, commit `2b778806715a057d860fcbd3ad61f3e201f5c7b0`). It reports turbine CO₂, specific ammonia-plant energy, and specific plant CO₂. Steam export subtracts an allocation credit; import adds a burden. The model uses 4.187 kJ/kcal and does not deduct recovered or stored CO₂. Default emission factors remain editable assumptions, not a claim of current regulatory compliance.
 
 `co2.test.mjs` checks the original example, import/export, units, factor edits, invalid readings, history validation, and report output. Calculation history stays on the current browser and is limited to the latest 10 entries.
+
+The CO₂ interface groups heat rate and natural gas LHV under ammonia plant inputs. The IPCC source note identifies the default natural gas factor; electricity and steam factors remain project assumptions. No calculation equations changed.

@@ -31,11 +31,13 @@ export function reportRows(record) {
   const r = validateRecord(record);
   const inputRows = list => list.map(f => [f[1], r.values[f[0]] * f[3][r.units[f[0]]], r.units[f[0]], f[4]]);
   return [
-    ['ProcessCalc · CO₂ Emissions'], ['Date', r.date], ['Steam direction', r.direction], [],
+    ['ProcessCalc · CO₂ Emissions Calculator'], ['Basis', 'Based on IPCC guidance; the default natural gas factor is 56.1 tCO₂/TJ on an LHV basis. Electricity and steam allowances are project assumptions.'], ['Date', r.date], ['Steam direction', r.direction], [],
     ['Inputs', 'Value', 'Unit', 'Remark'], ...inputRows(fields.slice(0, 8)), [],
     ['Assumptions', 'Value', 'Unit', 'Remark'], ...inputRows(fields.slice(8)), [],
-    ['Results', 'Value', 'Unit', 'Remark'],
-    ...visibleOutputs.map(f => [f[1], r.result[f[0]] * f[2][r.outUnits[f[0]]], r.outUnits[f[0]], f[3]]), [],
+    ['Emissions from Power Generation', 'Value', 'Unit', 'Remark'],
+    ...visibleOutputs.slice(0,1).map(f => [f[1], r.result[f[0]] * f[2][r.outUnits[f[0]]], r.outUnits[f[0]], f[3]]), [],
+    ['Emissions from Ammonia Plants', 'Value', 'Unit', 'Remark'],
+    ...visibleOutputs.slice(1).map(f => [f[1], r.result[f[0]] * f[2][r.outUnits[f[0]]], r.outUnits[f[0]], f[3]]), [],
     ['Method', 'CO₂ only; no deduction for recovered or stored CO₂. Steam export is an allocation credit. Turbine emissions use the electricity factor.'],
     ['Energy conversion', '4.187 kJ/kcal'],
   ];
