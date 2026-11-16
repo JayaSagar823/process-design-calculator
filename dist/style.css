@@ -344,14 +344,6 @@ fieldset.segmented-field>legend{font-size:13px;line-height:18px;font-weight:500;
 @media(max-width:599.95px){.settings-fields{grid-template-columns:1fr}}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]) :is(.recent-card,.recent-empty){border:1px solid var(--line)}}
 :root[data-theme=dark] :is(.recent-card,.recent-empty){border:1px solid var(--line)}
-/* Cross-audit, issues 31, 77-85. Home cards: three across only where the longest title fits on one line. */
-@media(min-width:901px) and (max-width:1099.98px){
- .tool-cards{grid-template-columns:1fr}
- .tool-card{flex-direction:row;align-items:center;gap:20px;padding:24px}
- .tool-card .tool-symbol{margin:0}
- .tool-card .tool-card-text{margin-bottom:0;flex:1}
- .tool-card .card-action{margin:0;padding:0;border:0}
-}
 @media(min-width:901px){
  /* The header is as tall as the tab strip, so the tabs share its centre line. */
  .header-inner{padding-top:10px;padding-bottom:10px}
@@ -630,3 +622,6 @@ input:focus,select:focus,textarea:focus,input:focus-visible,select:focus-visible
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]) .calc-mark .mark-top{stop-color:color-mix(in srgb,var(--raven-seed) 70%,var(--raven-primary-main))!important}:root:not([data-theme=light]) .calc-mark .mark-bottom{stop-color:var(--raven-seed)!important}}
 :root[data-theme=dark] .calc-mark .mark-top{stop-color:color-mix(in srgb,var(--raven-seed) 70%,var(--raven-primary-main))!important}
 :root[data-theme=dark] .calc-mark .mark-bottom{stop-color:var(--raven-seed)!important}
+/* Home cards are tiles at every width above 900px (three across); a long title wraps evenly onto two lines
+   rather than the tiles turning into rows on mid-size screens. Tablets and phones keep the rows. */
+@media(min-width:901px){.tool-card :is(h2,h3){text-wrap:balance}}
