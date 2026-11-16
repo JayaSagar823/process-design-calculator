@@ -51,4 +51,27 @@ export function applyTheme(theme = readSettings().theme, doc = globalThis.docume
     if (pinned) { meta.removeAttribute('media'); meta.content = pinned.dataset.color; }
     else { if (meta.dataset.media) meta.setAttribute('media', meta.dataset.media); meta.content = meta.dataset.color; }
   }
+  paintCaret(doc);
+}
+
+// Lucide chevron-down (ISC) for every dropdown. A <select> can't hold an icon and a background image can't read
+// CSS variables, so the glyph is drawn here in the theme's own --action-ink and handed to CSS as --caret; CSS keeps
+// its drawn caret until this runs. Called on every theme change.
+const CARET_PATH = 'm6 9 6 6 6-6';
+function toRgba(value) {
+  const srgb = value.match(/color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)(?: \/ ([\d.]+))?\)/);
+  if (srgb) return `rgba(${[1, 2, 3].map(i => Math.round(srgb[i] * 255)).join(',')},${srgb[4] ?? 1})`;
+  return value;
+}
+export function paintCaret(doc = globalThis.document) {
+  const view = doc?.defaultView;
+  if (!view?.getComputedStyle || !doc.body) return;
+  const probe = doc.createElement('span');
+  probe.style.color = 'var(--action-ink)';
+  doc.body.append(probe);
+  const ink = toRgba(view.getComputedStyle(probe).color);
+  probe.remove();
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${ink}" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="${CARET_PATH}"/></svg>`;
+  doc.documentElement.style.setProperty('--caret', `url("data:image/svg+xml,${encodeURIComponent(svg)}")`);
+  doc.documentElement.dataset.caret = '';
 }

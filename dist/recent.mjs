@@ -25,7 +25,7 @@ function steamRow(entry) {
   if (!entry?.id || !entry.result?.phase || !entry.inputs) return null;
   const facts = Object.entries(entry.inputs).filter(([k, v]) => k in propertyLabels && Number.isFinite(v))
     .map(([k, v]) => `${propertyLabels[k]} ${formatValue(fromSI(v, steamUnit(entry, k)))} ${steamUnit(entry, k).label}`);
-  return {id: entry.id, date: entry.createdAt, headline: phaseName(entry.result), detail: facts.join(', ')};
+  return {id: entry.id, date: entry.createdAt, headline: phaseName(entry.result), detail: facts.join(', '), reading: {label: 'Steam phase', value: phaseName(entry.result), unit: ''}};
 }
 
 function ammoniaRow(r) {
@@ -35,13 +35,13 @@ function ammoniaRow(r) {
   else { const u = AMMONIA_PRESSURE.find(d => d[0] === r.outputUnit) ?? AMMONIA_PRESSURE[0]; value = (r.p - u[3]) / u[2]; }
   const what = r.mode === 'pt' ? 'Saturation temperature' : 'Saturation pressure';
   const given = r.mode === 'pt' ? 'pressure' : 'temperature';
-  return {id: r.id, date: r.date, headline: `${what} ${fixed(value)} ${ammoniaLabel(r.outputUnit)}`, detail: `From a ${given} of ${plain(r.input)} ${ammoniaLabel(r.inputUnit)}`};
+  return {id: r.id, date: r.date, headline: `${what} ${fixed(value)} ${ammoniaLabel(r.outputUnit)}`, detail: `From a ${given} of ${plain(r.input)} ${ammoniaLabel(r.inputUnit)}`, reading: {label: `Ammonia ${what.toLowerCase()}`, value: fixed(value), unit: ammoniaLabel(r.outputUnit)}};
 }
 
 function co2Row(r) {
   if (!r?.id || !Number.isFinite(r.result?.specificCO2)) return null;
   const turbine = Number.isFinite(r.result.turbineCO2) ? `Turbine CO₂ ${co2Format(r.result.turbineCO2)} tCO₂/h, ` : '';
-  return {id: r.id, date: r.date, headline: `${co2Format(r.result.specificCO2)} tCO₂/t NH₃`, detail: `${turbine}steam ${r.direction === 'import' ? 'import' : 'export'}`};
+  return {id: r.id, date: r.date, headline: `${co2Format(r.result.specificCO2)} tCO₂/t NH₃`, detail: `${turbine}steam ${r.direction === 'import' ? 'import' : 'export'}`, reading: {label: 'CO₂ per tonne of ammonia', value: co2Format(r.result.specificCO2), unit: 'tCO₂/t NH₃'}};
 }
 
 const ROWS = {steam: steamRow, ammonia: ammoniaRow, co2: co2Row};

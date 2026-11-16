@@ -2,6 +2,8 @@ import {setupInstall} from './install.mjs';
 import {watchForUpdates} from './updates.mjs';
 import {readSettings,applyTheme,SETTINGS_KEY} from './prefs.mjs';
 applyTheme(readSettings().theme);
+// Device theme: the caret follows the system switching between light and dark.
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>applyTheme(readSettings().theme));
 addEventListener('storage',e=>{if(e.key===SETTINGS_KEY||e.key===null)applyTheme(readSettings().theme);});
 const $=id=>document.getElementById(id);
 setupInstall({document,window,navigator,appURL:new URL('./',import.meta.url).href});

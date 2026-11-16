@@ -31,3 +31,26 @@ export function recentRow(item, base = '') {
   link.append(symbol, body);
   return link;
 }
+
+// Home's Latest Readings row: a bar in the tool's colour, what was worked out and when, the value at the end.
+// The label names the quantity, so the colour is never the only cue.
+export function recentReading(item, base = '') {
+  const reading = item.reading ?? {label: item.headline, value: '', unit: ''};
+  const link = document.createElement('a');
+  link.className = 'reading';
+  link.href = base + item.href;
+  const when = formatDateTime(item.date);
+  link.setAttribute('aria-label', `${item.toolName}: ${reading.label} ${reading.value} ${reading.unit}. ${when}. Open in its calculator`.replace(/\s+/g, ' '));
+  const bar = document.createElement('span');
+  bar.className = `reading-bar ${item.tool}`;
+  bar.setAttribute('aria-hidden', 'true');
+  const body = document.createElement('span');
+  body.className = 'reading-text';
+  body.append(text('strong', reading.label, 'reading-label'), text('span', when, 'reading-meta'));
+  const value = document.createElement('span');
+  value.className = 'reading-value';
+  value.append(text('strong', reading.value));
+  if (reading.unit) value.append(text('span', reading.unit, 'reading-unit'));
+  link.append(bar, body, value);
+  return link;
+}

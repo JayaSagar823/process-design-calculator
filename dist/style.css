@@ -658,3 +658,72 @@ input:focus,select:focus,textarea:focus,input:focus-visible,select:focus-visible
    the target and the glyph doesn't compete with the title; it takes the accent on hover. */
 .tool-card .card-action{color:var(--muted)}
 .tool-card:hover .card-action,.tool-card:focus-visible .card-action{color:var(--accent)}
+/* Dropdown caret: Lucide chevron-down at 20px, drawn by prefs.mjs in the theme's --action-ink (see paintCaret).
+   Until it has run, and in forced colours, the CSS-drawn caret above stays. */
+:root[data-caret] select,:root[data-caret] select:hover,:root[data-caret] select:focus,:root[data-caret] select:focus-visible{background-image:var(--caret);background-size:20px 20px;background-position:right 10px center;background-repeat:no-repeat}
+@media(forced-colors:active){:root[data-caret] select{background-image:none}}
+/* ── Home, direction B (Instrument Bento) ───────────────────────────────────────────────────────────────────────
+   The calculators are tiles: Steam leads as the wide feature tile (graph-paper ground, the steam glyph as a faint
+   watermark), Ammonia and CO₂ sit side by side. Below, Latest Readings lists the three newest results as
+   readouts (value at the end, a bar in the tool's colour). With nothing saved yet the page is a first visit: a
+   welcome, a "Good to Know" card on what the app does, and an empty Latest Readings. Neutral surfaces only: the
+   brand blue stays for actions. */
+.home-b [data-first-visit-only]{display:none}
+.home-b[data-first-visit] [data-first-visit-only]{display:block}
+.home-b[data-first-visit] .home-footnote{display:none}
+.home-b .home-heading{margin-bottom:20px}
+.home-b .home-welcome{margin:0 0 6px;font-size:14px;line-height:20px;font-weight:500;color:var(--muted)}
+.home-b .home-heading .home-lede{margin:10px 0 0;font-size:16px;line-height:24px;color:var(--muted);max-width:520px}
+.bento{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.bento-tile{position:relative;overflow:hidden;min-height:196px;box-sizing:border-box;padding:18px;border-radius:var(--raven-radius-table);background:var(--surface);border:1px solid color-mix(in srgb,var(--line) 70%,transparent);box-shadow:var(--subtle-lift);color:var(--ink);text-decoration:none;display:flex;flex-direction:column;justify-content:space-between;gap:16px;transition:box-shadow var(--raven-motion-base,.2s),border-color var(--raven-motion-base,.2s)}
+.bento-tile:hover{border-color:var(--tf-border-hover);box-shadow:var(--subtle-lift),0 6px 16px -8px color-mix(in srgb,var(--raven-ink) 18%,transparent)}
+.bento-tile:focus-visible{outline:var(--focus-ring);outline-offset:2px}
+.bento-feature{grid-column:1/-1;padding:20px;border-color:color-mix(in srgb,var(--raven-ink) 8%,transparent);background-color:var(--surface);background-image:linear-gradient(color-mix(in srgb,var(--raven-ink) 5.5%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--raven-ink) 5.5%,transparent) 1px,transparent 1px);background-size:24px 24px;box-shadow:0 1px 2px color-mix(in srgb,var(--raven-ink) 6%,transparent),0 10px 24px -12px color-mix(in srgb,var(--raven-ink) 18%,transparent)}
+.bento-watermark{position:absolute;right:-24px;bottom:-36px;width:190px;height:190px;color:color-mix(in srgb,var(--raven-ink) 8%,transparent);pointer-events:none}
+.bento-watermark svg{width:100%;height:100%;stroke-width:.9}
+.bento .tool-symbol{position:relative;width:48px;height:48px;margin:0;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:none}
+.bento .tool-symbol svg{width:28px;height:28px;stroke-width:1.5}
+.bento-text{position:relative;display:flex;flex-direction:column;gap:4px}
+.bento-title{font-size:18px;line-height:22px;font-weight:600}
+.bento-desc{font-size:13px;line-height:18px;color:var(--muted)}
+.bento-feature .bento-title{font-size:24px;line-height:30px}
+.bento-feature .bento-desc{font-size:14px;line-height:20px;max-width:260px}
+@media(min-width:901px){.bento{grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:16px}.bento-feature{grid-column:auto}.bento-tile{min-height:220px}}
+/* Good to Know (first visit only). */
+.good-to-know{margin-top:28px;border-radius:var(--raven-radius-table);background:var(--surface);border:1px solid color-mix(in srgb,var(--line) 70%,transparent);overflow:hidden}
+.good-to-know h2{margin:0;padding:14px 16px 6px;font-size:18px;line-height:24px;font-weight:600}
+.good-to-know ul{margin:0;padding:0 16px 4px;list-style:none}
+.good-to-know li{display:flex;align-items:center;gap:12px;min-height:44px;padding:6px 0;border-top:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.good-to-know li>svg{width:20px;height:20px;flex:none;color:var(--muted)}
+.good-to-know li>span:not(.gtk-text){display:flex;flex-direction:column;flex:1;min-width:0}
+.good-to-know .gtk-text{flex:1;font-size:14px;line-height:20px}
+.good-to-know li>span .gtk-text{flex:none}
+.good-to-know .gtk-status{font-size:12px;line-height:16px;color:var(--muted)}
+.good-to-know .gtk-status::before{display:none}
+.good-to-know .text-button{flex:none}
+@media(display-mode:standalone){.good-to-know .gtk-install{display:none}}
+/* Latest Readings. */
+.readings .section-heading{margin-top:28px}
+.reading-list{border-radius:var(--raven-radius-table);background:var(--surface);border:1px solid color-mix(in srgb,var(--line) 70%,transparent);overflow:hidden}
+.reading{display:grid;grid-template-columns:6px minmax(0,1fr) auto;align-items:center;gap:12px;min-height:64px;padding:12px 16px;box-sizing:border-box;color:var(--ink);text-decoration:none}
+.reading+.reading{border-top:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.reading:hover{background:var(--raven-state-hover)}
+.reading:focus-visible{outline:var(--focus-ring);outline-offset:-2px}
+.reading-bar{width:6px;height:36px;border-radius:3px;background:var(--muted)}
+.reading-bar.steam{background:var(--raven-info)}
+.reading-bar.ammonia{background:var(--raven-shell-star-gold)}
+.reading-bar.co2{background:var(--raven-success)}
+.reading-text{display:flex;flex-direction:column;min-width:0}
+.reading-label{font-size:14px;line-height:20px;font-weight:500}
+.reading-meta{font-size:12px;line-height:16px;color:var(--muted)}
+.reading-value{display:flex;flex-direction:column;align-items:flex-end;text-align:right;max-width:46vw}
+.reading-value strong{font-size:20px;line-height:24px;font-weight:600;font-variant-numeric:tabular-nums}
+.reading-unit{font-size:12px;line-height:16px;color:var(--muted)}
+.reading-empty{display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--raven-radius-table);border:1px dashed var(--line);background:var(--surface)}
+.reading-empty[hidden]{display:none}
+.reading-empty-icon{width:40px;height:40px;flex:none;border-radius:12px;background:var(--raven-surface-tier3);color:var(--muted);display:flex;align-items:center;justify-content:center}
+.reading-empty-icon svg{width:22px;height:22px}
+.reading-empty>span:last-child{display:flex;flex-direction:column}
+.reading-empty strong{font-size:16px;line-height:22px;font-weight:600}
+.reading-empty>span:last-child>span{font-size:14px;line-height:20px;color:var(--muted)}
+.good-to-know .text-button{min-height:44px}
