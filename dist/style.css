@@ -429,3 +429,8 @@ dialog::-webkit-scrollbar-track{background:transparent}
 .home-main .home-heading{margin-bottom:24px}
 .home-main .home-heading h1{margin:0}
 .recent-title{margin:0 0 12px}
+/* Home: All Calculators under Recent Calculations. */
+.home-section-title{margin-top:32px}
+.home-main .tool-cards+.home-footnote{margin-top:16px}
+/* On Home the card titles sit under the All Calculators heading, so they are h3 at the card-title size. */
+.tool-card h3{font-size:20px;line-height:32px;font-weight:600;letter-spacing:.15px;margin:0}
