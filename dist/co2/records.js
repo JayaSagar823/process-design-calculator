@@ -1,7 +1,12 @@
 import {fields, outputs, calculate} from './calc.js';
 
 export const visibleOutputs = outputs.filter(([id]) => ['turbineCO2', 'specificEnergy', 'specificCO2'].includes(id));
-export const format = n => n.toLocaleString('en-US', {maximumFractionDigits: 6});
+// On screen: at most 5 significant digits, never rounding away whole units (149,573 stays 149,573).
+export const format = n => n.toLocaleString('en-US', Math.abs(n) >= 1e5 ? {maximumFractionDigits: 0} : {maximumSignificantDigits: 5});
+// Reports keep their fuller precision.
+const reportNumber = n => n.toLocaleString('en-US', {maximumFractionDigits: 6});
+// Two calculations share their inputs when every reading, unit and the steam direction match.
+export const sameInputs = (a, b) => a.direction === b.direction && fields.every(([id]) => a.values?.[id] === b.values?.[id] && a.units?.[id] === b.units?.[id]);
 export const initialUnits = () => Object.fromEntries(fields.map(f => [f[0], Object.keys(f[3])[0]]));
 export const initialOutputUnits = () => Object.fromEntries(outputs.map(f => [f[0], Object.keys(f[2])[0]]));
 
@@ -43,5 +48,5 @@ export function reportRows(record) {
   ];
 }
 
-export const reportText = record => reportRows(record).map(row => row.map(v => typeof v === 'number' ? format(v) : v).join(' | ')).join('\n');
+export const reportText = record => reportRows(record).map(row => row.map(v => typeof v === 'number' ? reportNumber(v) : v).join(' | ')).join('\n');
 export const reportCSV = record => '\uFEFF' + reportRows(record).map(row => row.map(v => '"' + String(v).replaceAll('"', '""') + '"').join(',')).join('\r\n');

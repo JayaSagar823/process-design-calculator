@@ -1,6 +1,8 @@
 import {units,toSI,fromSI} from './units.mjs';
 import {createHistory} from './history.mjs';
 import {propertyLabels as labels,formatValue as resultFormat,phaseName as phaseLabel,createReport} from './report.mjs';
+import {formatDateTime,formatTime} from './dates.mjs';
+import {toast as showToast,confirmAction} from './feedback.mjs';
 const $=id=>document.getElementById(id);
 const keys=['P','T','Q','H','S'];
 let inputPair='PT';
@@ -9,9 +11,13 @@ const worker=new Worker(new URL('./engine/worker.mjs',import.meta.url),{type:'mo
 const fmt=n=>Number(n.toPrecision(7)).toString();
 const display=(k,v)=>fromSI(v,units[k][unit[k]]);
 const copyIcon='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>';
+const trashIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg>';
+const shareIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m-4 4 4-4 4 4M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg>';
+const downloadIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg>';
 const historyStore=createHistory({getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value)});
-let toastTimer,historyEntryId=null,historyPersistent=true;
-function toast(text){clearTimeout(toastTimer);$('toast').textContent=text;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,2500);}
+let historyEntryId=null,historyPersistent=(()=>{try{const probe='steam-operator.probe';localStorage.setItem(probe,'1');localStorage.removeItem(probe);return true;}catch{return false;}})();
+// Outside an open modal dialog the page is inert, so the message bar moves into the top dialog to keep its Undo pressable.
+function toast(text,options){const host=[...document.querySelectorAll('dialog[open]')].pop()??document.body,node=$('toast');if(node&&node.parentElement!==host)host.append(node);showToast(text,options);}
 async function copyValue(text,label){
  try{await navigator.clipboard.writeText(text);toast(`${label} copied`);}
  catch{toast('Copy unavailable. Select the value and copy it manually.');}
@@ -19,8 +25,30 @@ async function copyValue(text,label){
 function copyButton(kind,key,disabled=false){return `<button type="button" class="copy-value" data-copy-${kind}="${key}" aria-label="Copy ${labels[key]} ${kind} value" title="Copy value" ${disabled?'disabled':''}>${copyIcon}</button>`;}
 function options(k){return units[k].map((u,i)=>`<option value="${i}" ${i===unit[k]?'selected':''}>${u.label}</option>`).join('');}
 function complete(){return selected.length===2&&selected.every(k=>Number.isFinite(values[k]));}
+// The engine's own limits (engine/thermo.mjs), shown under the field and checked before calculating.
+// With vapor fraction as an input the state must sit below the critical point, which the engine checks strictly.
+const LIMITS={P:[611.657,1e8],T:[273.16,1073.15],Q:[0,1]},CRITICAL={P:22.064e6,T:647.096};
+function limits(k){if(!LIMITS[k])return null;const capped=k!=='Q'&&inputPair.includes('Q');return {lo:LIMITS[k][0],hi:capped?CRITICAL[k]:LIMITS[k][1],below:capped};}
+function rangeText(k){const l=limits(k);if(!l)return '';const u=units[k][unit[k]],lo=fmt(fromSI(l.lo,u)),hi=fmt(fromSI(l.hi,u));return l.below?`Range: ${lo} to below ${hi} ${u.label}, the critical point`:`Range: ${lo} to ${hi} ${u.label}`;}
+// A value typed from the rounded hint can land a hair outside the exact bound; snap it onto the bound.
+function withinLimits(k){const l=limits(k);if(!l)return true;const v=values[k],eps=Math.abs(l.hi)*1e-9+1e-12;if(Math.abs(v-l.lo)<=Math.max(eps,Math.abs(l.lo)*1e-9)){values[k]=l.lo;return true;}if(!l.below&&Math.abs(v-l.hi)<=eps){values[k]=l.hi;return true;}return v>=l.lo&&(l.below?v<l.hi:v<=l.hi);}
+function fieldError(k,message){const input=$('value-'+k),error=$('error-'+k);if(!input||!error)return;error.textContent=message||'';error.hidden=!message;if(message){input.setAttribute('aria-invalid','true');input.setAttribute('aria-describedby',`error-${k}${LIMITS[k]?` range-${k}`:''}`);}else{input.removeAttribute('aria-invalid');if(LIMITS[k])input.setAttribute('aria-describedby',`range-${k}`);else input.removeAttribute('aria-describedby');}}
+function checkInputs(){
+ const problems=[...inputPair].map(k=>{
+  const text=(draft[k]??'').trim();
+  if(!text)return [k,`Enter ${labels[k].toLowerCase()}.`];
+  if(!Number.isFinite(values[k]))return [k,'Enter a valid number.'];
+  if(!withinLimits(k))return [k,`Out of range. ${rangeText(k).replace('Range: ','Use ')}.`];
+  return [k,''];
+ });
+ problems.forEach(([k,message])=>fieldError(k,message));
+ const first=problems.find(([,message])=>message);
+ if(first)$('value-'+first[0]).focus();
+ return !first;
+}
 function controls(){
- $('calculate').disabled=!ready||busy||!complete();
+ $('calculate').disabled=!ready||busy;
+ $('clear').disabled=!result&&!keys.some(k=>(draft[k]??'').trim());
  $('calculate').textContent=busy?'Calculating…':'Calculate';
  $('input-status').textContent=loadError?'Calculator unavailable. Please reload.':!ready?'Preparing calculator…':busy?'Calculating properties…':'';
  $('input-status').hidden=!$('input-status').textContent;
@@ -37,14 +65,14 @@ function syncInputState(){
  });
 }
 function renderInputs(){
- $('inputs').innerHTML='<div class="input-columns" aria-hidden="true"><span>Property</span><span>Value</span><span>Unit</span></div>'+keys.map(k=>`<div class="input-row" id="row-${k}"><label for="value-${k}">${labels[k]}</label><div class="input-value-cell"><input type="text" inputmode="decimal" autocomplete="off" aria-label="${labels[k]} value" id="value-${k}" placeholder="—">${copyButton('input',k,true)}</div><select aria-label="${labels[k]} unit" data-unit="${k}">${options(k)}</select></div>`).join('');
+ $('inputs').innerHTML='<div class="input-columns" aria-hidden="true"><span>Property</span><span>Value</span><span>Unit</span></div>'+keys.map(k=>`<div class="input-row" id="row-${k}"><label for="value-${k}">${labels[k]}</label><div class="input-value-cell"><input type="text" inputmode="decimal" autocomplete="off" aria-label="${labels[k]} value" id="value-${k}" placeholder="Enter value"${LIMITS[k]?` aria-describedby="range-${k}"`:''}>${copyButton('input',k,true)}</div><select aria-label="${labels[k]} unit" data-unit="${k}">${options(k)}</select><p class="field-error" id="error-${k}" role="alert" hidden></p>${LIMITS[k]?`<p class="hint range-hint" id="range-${k}">${rangeText(k)}</p>`:''}</div>`).join('');
  keys.forEach(k=>{$('value-'+k).value=draft[k]??'';});
  syncInputState();
  keys.forEach(k=>$('value-'+k).addEventListener('input',()=>{
   const text=$('value-'+k).value;draft[k]=text;
   const n=/^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/.test(text.trim())?Number(text):NaN;
   values[k]=Number.isFinite(n)?toSI(n,units[k][unit[k]]):undefined;
-  syncInputState();invalidate();
+  fieldError(k,'');syncInputState();invalidate();
  }));
  $('inputs').querySelectorAll('[data-copy-input]').forEach(button=>button.onclick=()=>{const k=button.dataset.copyInput;copyValue(draft[k],`${labels[k]} input`);});
  bindUnits($('inputs'));
@@ -52,7 +80,7 @@ function renderInputs(){
 function bindUnits(parent){parent.querySelectorAll('[data-unit]').forEach(el=>el.addEventListener('change',()=>{const k=el.dataset.unit;unit[k]=Number(el.value);keys.forEach(key=>{if(Number.isFinite(values[key]))draft[key]=fmt(display(key,values[key]));});renderInputs();renderResult();controls();}));}
 function invalidate(){++seq;busy=false;result=null;$('message').textContent='';renderResult();controls();}
 function calculate(){
- if(!ready||busy||!complete())return;
+ if(!ready||busy||!checkInputs()||!complete())return;
  const id=++seq;busy=true;result=null;$('message').textContent='';renderResult();controls();
  worker.postMessage({id,inputs:Object.fromEntries(selected.map(k=>[k,values[k]]))});
 }
@@ -84,17 +112,22 @@ function renderResult(){
  const vapor=result?.phase==='Superheated vapor',liquid=result?.phase==='Compressed liquid';
  const shown=result?{...result,Q:vapor?1:liquid?0:result.Q}:null;
  $('result-actions').hidden=!result;
- $('result-actions').innerHTML=exportActions(!result);bindExportActions($('result-actions'),currentSnapshot);
+ $('result-actions').innerHTML=exportActions({main:true,disabled:!result});bindExportActions($('result-actions'),currentSnapshot);
  $('phase').hidden=!result;$('phase').textContent=result?phaseLabel(result):'';
- $('results').innerHTML=`${saturationMarkup(result)}<div class="output-columns" aria-hidden="true"><span>Property</span><span>Value</span><span>Unit</span></div><div class="result-grid">${Object.keys(labels).map(k=>`<div class="result-item"><label>${labels[k].replace('Compressibility','Compressi&shy;bility')}</label><div class="output-value-cell"><strong data-result="${k}" class="${shown?'':'pending'}">${!shown?'—':shown[k]===null?'N/A':resultFormat(display(k,shown[k]))}</strong>${copyButton('output',k,!shown||shown[k]===null)}</div><select data-unit="${k}" aria-label="${labels[k]} result unit">${options(k)}</select></div>`).join('')}</div>`;
+ $('results').innerHTML=`${saturationMarkup(result)}<div class="output-columns" aria-hidden="true"><span>Property</span><span>Value</span><span>Unit</span></div><div class="result-grid">${Object.keys(labels).map(k=>`<div class="result-item"><label>${labels[k].replace('Compressibility','Compressi&shy;bility')}</label><div class="output-value-cell"><strong data-result="${k}" class="${shown?'':'pending'}">${!shown?'—':shown[k]===null?'N/A':resultFormat(display(k,shown[k]))}</strong></div><select data-unit="${k}" aria-label="${labels[k]} result unit">${options(k)}</select>${copyButton('output',k,!shown||shown[k]===null)}</div>`).join('')}</div>`;
  $('results').querySelectorAll('[data-copy-output]').forEach(button=>button.onclick=()=>{const k=button.dataset.copyOutput;copyValue($('results').querySelector(`[data-result="${k}"]`).textContent,`${labels[k]} output`);});
  $('results').querySelectorAll('[data-saturation-copy]').forEach(button=>button.onclick=()=>{const k=button.dataset.saturationCopy;const n=k==='T'?result.saturation.temperatureAtPressure:result.saturation.pressureAtTemperature;copyValue(resultFormat(fromSI(n,units[k][unit[k]])),`Saturation ${k==='T'?'temperature':'pressure'}`);});
  bindUnits($('results'));
  $('results-note').hidden=!result;
+ if(!result)savedNote('');
  $('results-note').textContent=!result?'':vapor?'Vapor fraction 1 means all vapor; saturation quality is not defined for superheated steam. N/A means not applicable.':result.phase==='Wet steam'?'N/A: wet-steam heat capacities and transport properties require a two-phase model.':result.phase==='Supercritical fluid'?'Vapor fraction is not defined for supercritical fluid. N/A means not applicable.':'N/A means not defined or not modeled for this phase.';
 }
 $('calculate').onclick=calculate;
 $('clear').onclick=()=>{values={};draft={};renderInputs();invalidate();$('value-'+inputPair[0]).focus();};
+// Example: 1 MPa(a) at 200 °C (superheated steam), written in the units the reader has chosen.
+$('example').onclick=async()=>{
+ if([...inputPair].some(k=>(draft[k]??'').trim())&&!(await confirmAction({title:'Replace Your Readings?',message:'Load Example replaces the readings you have entered.',confirmLabel:'Replace'})))return;
+ inputPair='PT';$('input-pair').value='PT';const example={P:1e6,T:473.15};values={...example};draft=Object.fromEntries(Object.entries(example).map(([k,v])=>[k,fmt(display(k,v))]));renderInputs();invalidate();$('value-P').focus();};
 $('input-pair').onchange=()=>{inputPair=$('input-pair').value;values={};draft={};renderInputs();invalidate();};
 $('inputs').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('input')){e.preventDefault();calculate();}});
 renderInputs();renderResult();controls();
@@ -102,28 +135,32 @@ renderInputs();renderResult();controls();
 function savedUnit(entry,key){return units[key].find(u=>u.label===entry.units[key])??units[key][0];}
 function savedValue(entry,key,value){return value===null?'N/A':resultFormat(fromSI(value,savedUnit(entry,key)));}
 function savedOutputs(entry){return {...entry.result,Q:entry.result.phase==='Superheated vapor'?1:entry.result.phase==='Compressed liquid'?0:entry.result.Q};}
-function dateLabel(entry){return new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'medium'}).format(new Date(entry.createdAt));}
-function updateHistoryCount(){$('history-count').textContent=historyStore.list().length;}
-function openHistory(id=null){historyEntryId=id;renderHistory();$('history-dialog').showModal();}
+function dateLabel(entry){return formatDateTime(entry.createdAt);}
+function updateHistoryCount(){
+ const n=historyStore.list().length;$('history-count').textContent=n;
+ $('history-meta').textContent=historyPersistent?`${n} saved on this device. The last 10 are kept.`:'Saved for this session only. This browser can\'t keep history.';
+ $('history-clear-all').disabled=!n;
+}
+function openHistory(id=null){historyEntryId=id;$('history-status').textContent='';renderHistory();$('history-dialog').showModal();}
+function savedNote(text){$('saved-note').textContent=text;$('saved-note').hidden=!text;}
+function deleteButton(entry,attributes=''){const label=`Delete calculation from ${dateLabel(entry)}`;return `<button type="button" class="action-icon" ${attributes} aria-label="${label}" title="${label}">${trashIcon}</button>`;}
 
 function saveCalculation(){
  const entry={id:crypto.randomUUID(),createdAt:resultCreatedAt,inputs:Object.fromEntries(selected.map(k=>[k,values[k]])),units:Object.fromEntries(Object.keys(units).map(k=>[k,units[k][unit[k]].label])),result:structuredClone(result)};
- historyPersistent=historyStore.add(entry);updateHistoryCount();
- if(!historyPersistent)toast('History saved for this session only. Browser storage is unavailable.');
+ historyPersistent=historyStore.add(entry,{replaceSame:true});updateHistoryCount();
+ savedNote(historyPersistent?`Saved to History at ${formatTime(entry.createdAt)}.`:'Kept for this session only. This browser can\'t save history.');
  if($('history-dialog').open)renderHistory();
 }
 function historyRows(entry,kind){
  const data=kind==='input'?entry.inputs:savedOutputs(entry);
- return '<div class="history-columns"><span>Property</span><span>Value</span><span>Unit</span></div>'+Object.entries(data).filter(([k])=>k in labels).map(([k,v])=>`<div class="history-row"><span>${labels[k]}</span><div class="output-value-cell"><strong>${savedValue(entry,k,v)}</strong><button type="button" class="copy-value" data-history-copy="${kind}:${k}" aria-label="Copy saved ${labels[k]} ${kind} value" title="Copy value" ${v===null?'disabled':''}>${copyIcon}</button></div><span class="saved-unit">${savedUnit(entry,k).label}</span></div>`).join('');
+ return '<div class="history-columns"><span>Property</span><span>Value</span><span>Unit</span></div>'+Object.entries(data).filter(([k])=>k in labels).map(([k,v])=>`<div class="history-row"><span>${labels[k]}</span><div class="output-value-cell"><strong>${savedValue(entry,k,v)}</strong></div><span class="saved-unit">${savedUnit(entry,k).label}</span><button type="button" class="copy-value" data-history-copy="${kind}:${k}" aria-label="Copy saved ${labels[k]} ${kind} value" title="Copy value" ${v===null?'disabled':''}>${copyIcon}</button></div>`).join('');
 }
 function renderHistory(){
  const entries=historyStore.list();const entry=entries.find(e=>e.id===historyEntryId);
- $('history-notice').textContent=historyPersistent?'Saved on this browser · Last 10 calculations':'Session history only · Browser storage unavailable';
- $('history-clear-all').disabled=!entries.length;
- $('history-clear-confirm').hidden=true;
+ updateHistoryCount();
  const content=$('history-content');
  if(entry){
-  content.innerHTML=`<div class="history-detail-actions"><button id="history-back" type="button">← All calculations</button><button id="history-load" type="button">Load calculation</button><button id="history-delete-one" class="history-delete" type="button">Delete calculation</button></div><h3 class="saved-phase">${phaseLabel(entry.result)}</h3><p class="saved-date">${dateLabel(entry)}</p><div class="saved-exports">${exportActions()}</div>${saturationMarkup(entry.result,Object.fromEntries(Object.keys(units).map(k=>[k,Math.max(0,units[k].findIndex(u=>u.label===entry.units[k]))])),false)}<h3 class="history-section-title">Input</h3>${historyRows(entry,'input')}<h3 class="history-section-title">Output</h3>${historyRows(entry,'output')}`;
+  content.innerHTML=`<div class="history-detail-actions"><button id="history-back" class="secondary" type="button">Back to History</button><button id="history-load" class="primary" type="button">Load Calculation</button>${deleteButton(entry,'id="history-delete-one"')}</div><h3 class="saved-phase">${phaseLabel(entry.result)}</h3><p class="saved-date">${dateLabel(entry)}</p><div class="saved-exports">${exportActions()}</div>${saturationMarkup(entry.result,Object.fromEntries(Object.keys(units).map(k=>[k,Math.max(0,units[k].findIndex(u=>u.label===entry.units[k]))])),false)}<h3 class="history-section-title">Input</h3>${historyRows(entry,'input')}<h3 class="history-section-title">Output</h3>${historyRows(entry,'output')}`;
   bindExportActions(content.querySelector('.saved-exports'),()=>entry);
   $('history-delete-one').onclick=()=>deleteHistoryEntry(entry.id);
   $('history-back').onclick=()=>{historyEntryId=null;renderHistory();};
@@ -132,26 +169,32 @@ function renderHistory(){
    inputPair=keys.filter(k=>k in entry.inputs).join('');$('input-pair').value=inputPair;
    unit=Object.fromEntries(Object.keys(units).map(k=>[k,Math.max(0,units[k].findIndex(u=>u.label===entry.units[k]))]));
    Object.keys(values).forEach(k=>draft[k]=fmt(display(k,values[k])));
-   result=structuredClone(entry.result);resultCreatedAt=entry.createdAt;$('message').textContent='';renderInputs();renderResult();controls();loadSaturationReferences();$('history-dialog').close();toast('Saved calculation loaded');window.dispatchEvent(new CustomEvent('fieldkit:result'));
+   result=structuredClone(entry.result);resultCreatedAt=entry.createdAt;$('message').textContent='';renderInputs();renderResult();controls();savedNote('');loadSaturationReferences();$('history-dialog').close();toast('Saved calculation loaded');window.dispatchEvent(new CustomEvent('fieldkit:result'));
   };
   content.querySelectorAll('[data-history-copy]').forEach(button=>button.onclick=()=>{const [kind,key]=button.dataset.historyCopy.split(':');const data=kind==='input'?entry.inputs:savedOutputs(entry);copyValue(savedValue(entry,key,data[key]),`${labels[key]} ${kind}`);});
  }else{
   historyEntryId=null;
-  content.innerHTML=entries.length?entries.map((entry,index)=>`<div class="history-entry"><button type="button" class="history-card" data-history-index="${index}"><span class="history-card-top"><strong>${phaseLabel(entry.result)}</strong><span>View →</span></span><time>${dateLabel(entry)}</time><span class="history-inputs">${Object.entries(entry.inputs).map(([k,v])=>`${labels[k]}: ${savedValue(entry,k,v)} ${savedUnit(entry,k).label}`).join(' · ')}</span></button><button type="button" class="history-delete" data-history-delete="${index}" aria-label="Delete calculation ${index+1}">Delete</button></div>`).join(''):'<div class="history-empty">No saved calculations yet.</div>';
+  content.innerHTML=entries.length?entries.map((entry,index)=>`<div class="history-entry"><button type="button" class="history-card" data-history-index="${index}"><span class="history-card-top"><strong>${phaseLabel(entry.result)}</strong><span>View</span></span><time>${dateLabel(entry)}</time><span class="history-inputs">${Object.entries(entry.inputs).map(([k,v])=>`${labels[k]}: ${savedValue(entry,k,v)} ${savedUnit(entry,k).label}`).join(', ')}</span></button>${deleteButton(entry,`data-history-delete="${index}"`)}</div>`).join(''):'<div class="history-empty">No saved calculations yet.</div>';
   content.querySelectorAll('[data-history-delete]').forEach(button=>button.onclick=()=>deleteHistoryEntry(entries[Number(button.dataset.historyDelete)].id));
   content.querySelectorAll('[data-history-index]').forEach(button=>button.onclick=()=>{historyEntryId=entries[Number(button.dataset.historyIndex)].id;renderHistory();});
  }
 }
 function deleteHistoryEntry(id){
- historyPersistent=historyStore.remove(id);historyEntryId=null;updateHistoryCount();renderHistory();
- toast(historyPersistent?'Calculation deleted':'Deleted for this session only. Browser storage is unavailable.');
- ($('history-content').querySelector('[data-history-index]')??$('history-close')).focus();
+ const entries=historyStore.list(),index=entries.findIndex(e=>e.id===id),entry=entries[index];
+ if(!entry)return;
+ historyPersistent=historyStore.remove(id);historyEntryId=null;$('history-status').textContent='';updateHistoryCount();renderHistory();
+ const cards=$('history-content').querySelectorAll('[data-history-index]');
+ (cards[index]??cards[index-1]??$('history-close')).focus();
+ toast('Calculation deleted',{action:'Undo',onAction:()=>{
+  historyPersistent=historyStore.insert(entry,index);updateHistoryCount();
+  if($('history-dialog').open){renderHistory();$('history-content').querySelectorAll('[data-history-index]')[index]?.focus();}
+ }});
 }
-$('history-clear-all').onclick=()=>{$('history-clear-confirm').hidden=false;$('history-clear-cancel').focus();};
-$('history-clear-cancel').onclick=()=>{$('history-clear-confirm').hidden=true;$('history-clear-all').focus();};
-$('history-clear-confirmed').onclick=()=>{
+$('history-clear-all').onclick=async()=>{
+ const n=historyStore.list().length;if(!n)return;
+ if(!(await confirmAction({title:'Delete All Saved Calculations?',message:`This removes all ${n} saved steam calculations from this device. This can't be undone.`,confirmLabel:'Delete All'})))return;
  historyPersistent=historyStore.clear();historyEntryId=null;updateHistoryCount();renderHistory();$('history-close').focus();
- toast(historyPersistent?'History cleared':'Cleared for this session only. Browser storage is unavailable.');
+ $('history-status').textContent='All saved calculations deleted.';
 };
 $('history-open').onclick=()=>openHistory();
 $('history-close').onclick=()=>$('history-dialog').close();
@@ -161,18 +204,18 @@ function currentSnapshot(){
  if(!result)return null;
  return {createdAt:resultCreatedAt,inputs:Object.fromEntries(selected.map(k=>[k,values[k]])),units:Object.fromEntries(Object.keys(units).map(k=>[k,units[k][unit[k]].label])),result};
 }
-function exportActions(disabled=false){
- return `<div class="export-actions"><button type="button" class="action-icon" aria-label="Share results" title="Share results" data-export-share ${disabled?'disabled':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m-4 4 4-4 4 4M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button><button type="button" class="action-icon" aria-label="Download results" title="Download results" data-export-download aria-expanded="false" ${disabled?'disabled':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg></button><div class="export-menu" hidden><button type="button" data-export-file="csv">CSV spreadsheet <small>Open in Excel</small></button><button type="button" data-export-file="txt">Text report <small>All values and units</small></button></div></div>`;
+// Only the results' own Share carries the page id; the copy inside a saved calculation's detail has none.
+function exportActions({main=false,disabled=false}={}){
+ return `<div class="export-actions result-actions"><button type="button" class="with-icon" ${main?'id="share" ':''}data-export-share ${disabled?'disabled':''}>${shareIcon}<span>Share</span></button><details class="download"><summary class="with-icon" data-export-download>${downloadIcon}<span>Download</span></summary><div class="export-menu"><button type="button" data-export-file="csv">CSV spreadsheet <small>Open in Excel</small></button><button type="button" data-export-file="txt">Text report <small>All values and units</small></button></div></details></div>`;
 }
 function bindExportActions(parent,getSnapshot){
  parent.querySelector('[data-export-share]').onclick=()=>{const snapshot=getSnapshot();if(snapshot)shareResults(snapshot);};
- const toggle=parent.querySelector('[data-export-download]'),menu=parent.querySelector('.export-menu');
- toggle.onclick=()=>{menu.hidden=!menu.hidden;toggle.setAttribute('aria-expanded',String(!menu.hidden));};
+ const menu=parent.querySelector('details.download'),toggle=menu.querySelector('summary');
  parent.querySelectorAll('[data-export-file]').forEach(button=>button.onclick=()=>{
   const snapshot=getSnapshot();if(snapshot)downloadResults(snapshot,button.dataset.exportFile);
-  menu.hidden=true;toggle.setAttribute('aria-expanded','false');toggle.focus();
+  menu.open=false;toggle.focus();
  });
- parent.onkeydown=e=>{if(e.key==='Escape'&&!menu.hidden){e.preventDefault();e.stopPropagation();menu.hidden=true;toggle.setAttribute('aria-expanded','false');toggle.focus();}};
+ parent.onkeydown=e=>{if(e.key==='Escape'&&menu.open){e.preventDefault();e.stopPropagation();menu.open=false;toggle.focus();}};
 }
 function shareResults(snapshot){
  const report=createReport(snapshot);

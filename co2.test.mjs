@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {calculate, defaults, fields, outputs} from './dist/co2/calc.js';
-import {readRecords, validateRecord, initialUnits, initialOutputUnits, reportRows, reportText, reportCSV} from './dist/co2/records.js';
+import {readRecords, validateRecord, initialUnits, initialOutputUnits, reportRows, reportText, reportCSV, format, sameInputs} from './dist/co2/records.js';
 
 const near = (a, b) => assert.ok(Math.abs(a - b) < 1e-8, `${a} != ${b}`);
 const record = () => ({id: 'example', date: '2026-11-15T12:00:00.000Z', values: defaults(), units: initialUnits(), outUnits: initialOutputUnits(), direction: 'export'});
@@ -72,4 +72,23 @@ test('CO₂ exports include all readings, assumptions, selected units, and match
   assert.ok(csv.startsWith('\uFEFF'));
   assert.match(csv, /"CO₂ emissions from power generation","18250","kgCO₂\/h"/);
   assert.match(csv, /\r\n/);
+});
+
+test('CO₂ screen numbers keep at most 5 significant digits while reports keep full precision', () => {
+  const result = calculate(defaults(), 'export');
+  assert.equal(format(result.turbineCO2), '18.25');
+  assert.equal(format(result.specificEnergy), '6.9174');
+  assert.equal(format(result.specificCO2), '1.6258');
+  assert.equal(format(18250), '18,250');
+  assert.equal(format(149573.28), '149,573');
+  assert.match(reportText(record()), /Specific plant energy \| 6\.917391/);
+});
+
+test('CO₂ history spots a repeat of the newest calculation by its readings, units and steam direction', () => {
+  const a = record(), b = {...record(), id: 'other', date: '2026-11-16T09:00:00.000Z'};
+  assert.ok(sameInputs(a, b));
+  assert.ok(!sameInputs(a, {...b, direction: 'import'}));
+  assert.ok(!sameInputs(a, {...b, values: {...b.values, steam: 90}}));
+  assert.ok(!sameInputs(a, {...b, units: {...b.units, power: 'kW'}}));
+  assert.ok(sameInputs(a, {...b, outUnits: {...b.outUnits, turbineCO2: 'kgCO₂/h'}}));
 });

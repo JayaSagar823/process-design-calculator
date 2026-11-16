@@ -3,9 +3,20 @@ import {watchForUpdates} from './updates.mjs';
 const $=id=>document.getElementById(id);
 setupInstall({document,window,navigator,appURL:new URL('./',import.meta.url).href});
 const reduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
-addEventListener('fieldkit:result',()=>{const output=$('output-panel');output?.focus({preventScroll:true});if(matchMedia('(max-width:900px)').matches)output?.scrollIntoView({behavior:reduce()?'instant':'smooth',block:'start'});});
-let offlineReady=false;
-function connectivity(){document.querySelectorAll('[data-connection]').forEach(el=>el.textContent=!navigator.onLine?(offlineReady?'Offline · Calculators available':'Offline · Reconnect to finish setup'):(offlineReady?'Ready for offline use':'Preparing offline access…'));}
+addEventListener('fieldkit:result',()=>{
+ const output=$('output-panel');if(!output)return;
+ output.focus({preventScroll:true});
+ const headerBottom=Math.max(0,document.querySelector('.app-header')?.getBoundingClientRect().bottom||0);
+ const top=output.getBoundingClientRect().top;
+ if(top<headerBottom||top>innerHeight-120)output.scrollIntoView({behavior:reduce()?'instant':'smooth',block:'start'});
+});
+let offlineReady=false,offlineUnavailable=false;
+function setConnection(text,state){document.querySelectorAll('[data-connection]').forEach(el=>{el.textContent=text;el.dataset.state=state;});}
+function connectivity(){
+ if(offlineUnavailable)return setConnection("Offline use isn't available in this browser.",'off');
+ if(navigator.onLine)setConnection(offlineReady?'Ready to use offline':'Getting offline use ready…',offlineReady?'ok':'wait');
+ else setConnection(offlineReady?'Offline. The calculators still work.':'Offline. Reconnect once to finish offline setup.',offlineReady?'ok':'wait');
+}
 addEventListener('online',connectivity);addEventListener('offline',connectivity);connectivity();
 function offerUpdate(reload){
  let notice=$('app-update');
@@ -16,7 +27,7 @@ function offerUpdate(reload){
   document.body.append(notice);
   const trigger=document.createElement('button');trigger.type='button';trigger.className='header-icon update-trigger';
   trigger.setAttribute('aria-label','Update available');trigger.title='Update available';
-  trigger.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6.2 6.2a8 8 0 0 1 13 2.8M4.8 15a8 8 0 0 0 13 2.8"/></svg>';
+  trigger.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6.2 6.2a8 8 0 0 1 13 2.8M4.8 15a8 8 0 0 0 13 2.8"/></svg><span class="header-icon-label">Update</span>';
   document.querySelector('.header-actions')?.prepend(trigger);
   trigger.onclick=()=>{notice.hidden=false;$('app-update-now').focus();};
   $('app-update-later').onclick=()=>{notice.hidden=true;trigger.focus();};
@@ -26,7 +37,7 @@ function offerUpdate(reload){
 }
 if('serviceWorker' in navigator){
  watchForUpdates({serviceWorker:navigator.serviceWorker,window,document,navigator,scriptURL:new URL('./sw.js',import.meta.url),
-  onReady(){offlineReady=true;connectivity();},onUpdate:offerUpdate,
-  onUnavailable(){document.querySelectorAll('[data-connection]').forEach(el=>el.textContent='Online access · Offline setup unavailable');}
+  onReady(){offlineReady=true;offlineUnavailable=false;connectivity();},onUpdate:offerUpdate,
+  onUnavailable(){offlineUnavailable=true;connectivity();}
  });
-}else document.querySelectorAll('[data-connection]').forEach(el=>el.textContent='Online access');
+}else{offlineUnavailable=true;connectivity();}

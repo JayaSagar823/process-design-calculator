@@ -59,10 +59,10 @@ for(const device of [chromeAndroid,chromeMac]) {
   assert.match(capable.$('install-status').textContent,/is installed/);
 }
 const mac=fixture(safariMac);
-assert.match(mac.$('install-steps').children.map(n=>n.textContent).join(' '),/File → Add to Dock/);
+assert.match(mac.$('install-steps').children.map(n=>n.textContent).join(' '),/File, then Add to Dock/);
 assert.match(mac.$('install-note').textContent,/Sonoma 14/);
 assert.equal(mac.$('install-native').hidden,true);
 const installed=fixture(samsung,{standalone:true});installed.trigger.listeners.click();
-assert.equal(installed.trigger.attributes['aria-label'],'App info');
+assert.equal(installed.trigger.attributes['aria-label'],'App Info');
 assert.equal(installed.$('install-instructions').hidden,true);
 console.log('Samsung prompt suppression, Mac/iPad guidance, native capability, installed state and clipboard fallback passed.');

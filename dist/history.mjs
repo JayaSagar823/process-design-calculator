@@ -10,15 +10,30 @@ function valid(entry){
  if(!['P','T','H','S'].every(k=>Number.isFinite(entry.result[k])))return false;
  return Object.keys(units).every(k=>(entry.result[k]===null||Number.isFinite(entry.result[k]))&&typeof entry.units?.[k]==='string');
 }
+// Same inputs (values, pair and every chosen unit) as another saved calculation: saving it again replaces that record.
+export function sameCalculation(a,b){
+ if(!a||!b)return false;
+ const ka=Object.keys(a.inputs??{}).sort(),kb=Object.keys(b.inputs??{}).sort();
+ return ka.join()===kb.join()&&ka.every(k=>a.inputs[k]===b.inputs[k])&&Object.keys(units).every(k=>a.units?.[k]===b.units?.[k]);
+}
 export function createHistory(storage){
  let entries=[];
  try {const parsed=JSON.parse(storage.getItem(HISTORY_KEY)??'[]');if(Array.isArray(parsed)){entries=parsed.filter(valid).slice(0,HISTORY_LIMIT);if(parsed.length>HISTORY_LIMIT)storage.setItem(HISTORY_KEY,JSON.stringify(entries));}}catch{}
  const persist=()=>{try{storage.setItem(HISTORY_KEY,JSON.stringify(entries));return true;}catch{return false;}};
  return {
   list:()=>structuredClone(entries),
-  add(entry){
+  add(entry,{replaceSame=false}={}){
    if(!valid(entry))throw new Error('Invalid calculation snapshot');
-   entries=[structuredClone(entry),...entries.filter(e=>e.id!==entry.id)].slice(0,HISTORY_LIMIT);
+   const rest=entries.filter(e=>e.id!==entry.id);
+   if(replaceSame&&sameCalculation(rest[0],entry))rest.shift();
+   entries=[structuredClone(entry),...rest].slice(0,HISTORY_LIMIT);
+   return persist();
+  },
+  insert(entry,index){
+   if(!valid(entry))throw new Error('Invalid calculation snapshot');
+   const rest=entries.filter(e=>e.id!==entry.id);
+   rest.splice(Math.max(0,Math.min(index,rest.length)),0,structuredClone(entry));
+   entries=rest.slice(0,HISTORY_LIMIT);
    return persist();
   },
   remove(id){entries=entries.filter(entry=>entry.id!==id);return persist();},
