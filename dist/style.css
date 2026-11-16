@@ -541,3 +541,5 @@ main.history-main,main.settings-main{max-width:calc(720px + 64px)}
    its unit smaller and muted so the figure carries the weight. */
 .saturation-value strong{font-size:24px;line-height:32px;font-weight:600;letter-spacing:0;font-variant-numeric:tabular-nums}
 .saturation-value strong small{font-size:14px;line-height:20px;font-weight:400;letter-spacing:.25px;color:var(--muted);margin-left:4px}
+/* Calculator cards (form and results, every tool) match Home and Settings: 16px corners, the same subtle lift. */
+.panel{border-radius:var(--raven-radius-table);box-shadow:var(--subtle-lift)}
