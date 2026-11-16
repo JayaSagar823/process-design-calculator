@@ -567,3 +567,32 @@ main.history-main,main.settings-main{max-width:calc(720px + 64px)}
 /* Settings: each switch spans its card, options sharing the width equally (as History's filter does). */
 .settings-section .segmented{display:flex;width:100%}
 .settings-section .segmented label{flex:1}
+/* A label kept for screen readers only (Settings' Theme legend: the card title already says Appearance). */
+.visually-hidden{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+/* Settings: each unit's default sits under its field as helper text. */
+.settings-fields .field-hint{margin:6px 0 0}
+/* Settings has its own Install row, so the header's Install would be the same action twice. */
+body:has(.settings-main) .app-header [data-install]{display:none}
+/* Settings history rows: the name takes the room, the trash button stays its own size. */
+.settings-row>div{flex:1;min-width:0}
+.settings-row>.action-icon:disabled{opacity:.4;cursor:default}
+/* Header product name: a step under the section titles so it doesn't outrank the page heading. */
+.brand{font-size:18px}
+/* Calculate and Clear: Raven's large button (42px, 22px sides), not a 56px slab; the CTA keeps its gloss but
+   drops the two-layer shadow to a 1px lift. Phones keep a 44px touch target. */
+#calculate,.actions #calculate,#clear,.actions #clear{min-height:42px;padding:8px 22px;line-height:24px}
+#calculate,.actions #calculate{box-shadow:inset 0 1px 0 color-mix(in srgb,var(--raven-on-frame-text) 30%,transparent),0 1px 2px rgba(var(--raven-cta-shadow-rgb),.18)}
+#calculate:hover,.actions #calculate:hover{box-shadow:inset 0 1px 0 color-mix(in srgb,var(--raven-on-frame-text) 35%,transparent),0 2px 4px rgba(var(--raven-cta-shadow-rgb),.2)}
+#calculate:active,.actions #calculate:active{box-shadow:inset 0 1px 0 color-mix(in srgb,var(--raven-on-frame-text) 20%,transparent)}
+@media(max-width:599.95px){#calculate,.actions #calculate,#clear,.actions #clear{min-height:44px}}
+/* CO₂ results (feedback: the values weren't highlighted): each output is a tinted tile, its number at 24px
+   (as Steam's saturation values) with the unit right beside it, not adrift mid-row, and Copy at the tile's end.
+   Tiles replace the hairlines, so a group reads as its answers, not a ruled form. */
+.co2-main .co2-result-group h3{border-bottom:0;padding-bottom:0}
+.co2-main .result-item{grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:4px 8px;padding:14px 12px 14px 16px;border:0;border-radius:var(--raven-radius-surface);background:color-mix(in srgb,var(--accent) 6%,var(--surface))}
+.co2-main .result-item+.result-item{margin-top:8px}
+.co2-main .result-item>label{grid-column:1/-1}
+.co2-main .output-value-cell strong{font-size:24px;line-height:32px;font-weight:600;letter-spacing:0;color:var(--ink);font-variant-numeric:tabular-nums}
+.co2-main .result-item select{justify-self:start;width:auto;max-width:100%;min-height:40px;height:40px;padding-left:8px;color:var(--muted)}
+.co2-main .result-item .copy-value{justify-self:end}
+@media(max-width:599.95px){.co2-main .result-item select{min-height:44px;height:44px}}

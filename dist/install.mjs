@@ -75,6 +75,9 @@ export function setupInstall({document,window,navigator,appURL}) {
     document.querySelectorAll('[data-install]').forEach(button=>{
       const label=isInstalled?'App Info':environment==='samsung'?'Install with Chrome':'Install App';
       button.setAttribute('aria-label',label);button.title=label;
+      // The visible word matches the announced name.
+      const text=isInstalled?'App Info':'Install',target=button.querySelector?.('.header-icon-label')||button;
+      if(target.textContent!==text)target.textContent=text;
     });
     $('install-title').textContent=isInstalled?'ProcessCalc':guide.title;
     $('install-description').textContent=isInstalled?'You’re using the installed app. Open it from your home screen, Dock or app launcher.':guide.description;

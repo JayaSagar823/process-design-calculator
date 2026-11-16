@@ -42,4 +42,13 @@ export function applyTheme(theme = readSettings().theme, doc = globalThis.docume
   if (!doc) return;
   if (theme === 'light' || theme === 'dark') doc.documentElement.dataset.theme = theme;
   else delete doc.documentElement.dataset.theme;
+  // The browser's own bar: each page lists a light and a dark colour by device scheme. A pinned theme uses its
+  // own colour whatever the device says; Device restores both.
+  const metas = [...doc.querySelectorAll('meta[name="theme-color"]')];
+  for (const meta of metas) if (!('media' in meta.dataset)) { meta.dataset.media = meta.getAttribute('media') ?? ''; meta.dataset.color = meta.content; }
+  const pinned = THEMES.includes(theme) && theme !== 'system' && metas.find(meta => meta.dataset.media.includes(theme));
+  for (const meta of metas) {
+    if (pinned) { meta.removeAttribute('media'); meta.content = pinned.dataset.color; }
+    else { if (meta.dataset.media) meta.setAttribute('media', meta.dataset.media); meta.content = meta.dataset.color; }
+  }
 }

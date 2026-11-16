@@ -1,6 +1,7 @@
 import {setupInstall} from './install.mjs';
 import {watchForUpdates} from './updates.mjs';
 import {readSettings,applyTheme,SETTINGS_KEY} from './prefs.mjs';
+applyTheme(readSettings().theme);
 addEventListener('storage',e=>{if(e.key===SETTINGS_KEY||e.key===null)applyTheme(readSettings().theme);});
 const $=id=>document.getElementById(id);
 setupInstall({document,window,navigator,appURL:new URL('./',import.meta.url).href});

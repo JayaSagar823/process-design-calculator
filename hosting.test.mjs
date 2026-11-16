@@ -16,6 +16,8 @@ try {
   const updates=await readFile(join(output,'updates.mjs'),'utf8');
   assert.ok(updates.includes(`export const APP_VERSION='${first.version}';`),'Page and worker must share a release version');
   assert.ok(!updates.includes('v17-source'));
+  const {version:release}=JSON.parse(await readFile(new URL('./package.json',import.meta.url),'utf8'));
+  assert.ok(updates.includes(`export const APP_RELEASE='${release}';`),'Settings shows the release from package.json');
   for (const base of ['/', '/process-design-calculator/']) {
     const origin = 'https://example.github.io';
     async function exists(path) {

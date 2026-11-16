@@ -1,5 +1,6 @@
 // Stamped by the same build that versions the complete offline cache.
 export const APP_VERSION='v17-source';
+export const APP_RELEASE='source';
 
 export function watchForUpdates({serviceWorker, window, document, navigator, scriptURL, onReady, onUpdate, onUnavailable, version=APP_VERSION}) {
   let registration, checking=false, stopped=false, announcedVersion;
