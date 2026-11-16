@@ -16,6 +16,8 @@ try {
   const updates=await readFile(join(output,'updates.mjs'),'utf8');
   assert.ok(updates.includes(`export const APP_VERSION='${first.version}';`),'Page and worker must share a release version');
   assert.ok(!updates.includes('v17-source'));
+  const {version:release}=JSON.parse(await readFile(new URL('./package.json',import.meta.url),'utf8'));
+  assert.ok(updates.includes(`export const APP_RELEASE='${release}';`),'Settings shows the release from package.json');
   for (const base of ['/', '/process-design-calculator/']) {
     const origin = 'https://example.github.io';
     async function exists(path) {
@@ -24,7 +26,7 @@ try {
       const info = await stat(local);
       if (info.isDirectory()) await stat(join(local, 'index.html'));
     }
-    for (const path of ['index.html', 'steam/index.html', 'ammonia/index.html', 'co2/index.html']) {
+    for (const path of ['index.html', 'history/index.html', 'settings/index.html', 'steam/index.html', 'ammonia/index.html', 'co2/index.html']) {
       const html = await readFile(join(output, path), 'utf8');
       for (const match of html.matchAll(/(?:href|src)="([^"]+)"/g)) {
         const target = new URL(match[1], origin + base + path);

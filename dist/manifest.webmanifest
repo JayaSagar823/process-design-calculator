@@ -6,8 +6,8 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f7f8fa",
-  "theme_color": "#f7f8fa",
+  "background_color": "#F8FBFD",
+  "theme_color": "#F8FBFD",
   "icons": [
     {
       "src": "./icons/raven-192.png",

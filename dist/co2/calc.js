@@ -6,7 +6,7 @@ export const fields=[
 ['feed','Natural gas feed',65000,{'Nm³/h':1,'Nm³/day':24},'Process feed included in the carbon estimate.'],
 ['fuel','Natural gas fuel',12000,{'Nm³/h':1,'Nm³/day':24},'Fuel gas consumed by the plant.'],
 ['demand','Plant power consumption',14,{'MW':1,'kW':1000},'Electrical demand of the ammonia plant.'],
-['steam','Steam flow',100,{'t/h':1,'kg/h':1000,'t/day':24},'Enter a positive flow; select export or import below.'],
+['steam','Steam flow',100,{'t/h':1,'kg/h':1000,'t/day':24},'Enter a positive flow, then choose export or import.'],
 ['production','Ammonia production',92,{'t/h':1,'kg/h':1000,'t/day':24},'Production rate must be greater than zero.'],
 ['electricity','Electricity CO₂ factor',.73,{'tCO₂/MWh':1,'kgCO₂/kWh':1,'kgCO₂/MWh':1000},'Applied to turbine output and plant power demand.'],
 ['steamEnergy','Steam energy allowance',755,{'kcal/kg':1,'kJ/kg':4.187,'MJ/kg':.004187},'Energy allowance per kg of steam.'],

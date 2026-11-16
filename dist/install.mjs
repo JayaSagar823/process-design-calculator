@@ -16,39 +16,39 @@ const guides={
   samsung:{
     title:'Install with Chrome',
     description:'Samsung Internet may block app installation on some phones. Open this calculator in Google Chrome to install it.',
-    steps:['Copy the calculator link below.','Open Google Chrome and paste the link into its address bar.','In Chrome, tap ⋮ → Install and create shortcut → Install. Some versions show Add to Home screen → Install.'],
+    steps:['Copy the calculator link below.','Open Google Chrome and paste the link into its address bar.','In Chrome, tap the three-dot menu, then Install and create shortcut, then Install. Some versions show Add to Home screen, then Install.'],
     note:'Keep Play Protect enabled. You can also use the calculator in your browser.',
     copy:true,
   },
   'mac-safari':{
-    title:'Add to your Mac',
+    title:'Add to Your Mac',
     description:'Save the calculator as an app in your Dock using Safari.',
-    steps:['Open this calculator in Safari.','Choose File → Add to Dock, or Share → Add to Dock.','Choose Add, then open the calculator from your Dock.'],
+    steps:['Open this calculator in Safari.','Choose File, then Add to Dock, or Share, then Add to Dock.','Choose Add, then open the calculator from your Dock.'],
     note:'Requires macOS Sonoma 14 or later. If Add to Dock is unavailable, update macOS or open this link in Google Chrome and use its install option.',
     copy:true,
   },
   'mac-chromium':{
-    title:'Install on your Mac',
+    title:'Install on Your Mac',
     description:'Open the calculator in its own app window on your Mac.',
-    steps:['Use the Install app button below when available.','In Chrome, you can also choose ⋮ → Cast, save, and share → Install page as app. In Edge, use ⋯ → Apps → Install this site as an app.'],
-    note:'Prefer Safari? On macOS Sonoma 14 or later, choose File → Add to Dock.',
+    steps:['Use the Install App button below when available.','In Chrome, you can also choose the three-dot menu, then Cast, save, and share, then Install page as app. In Edge, use the three-dot menu, then Apps, then Install this site as an app.'],
+    note:'Prefer Safari? On macOS Sonoma 14 or later, choose File, then Add to Dock.',
   },
   ios:{
-    title:'Add to your home screen',
+    title:'Add to Your Home Screen',
     description:'Use Safari to add the calculator to your iPhone or iPad.',
-    steps:['Open this calculator in Safari.','Tap Share → Add to Home Screen.','Enable Open as Web App if offered, then tap Add.'],
+    steps:['Open this calculator in Safari.','Tap Share, then Add to Home Screen.','Enable Open as Web App if offered, then tap Add.'],
     note:'Open the new icon on your home screen to use the calculator as an app.',
   },
   android:{
-    title:'Install on your phone',
+    title:'Install on Your Phone',
     description:'Use Google Chrome for installation on Android.',
-    steps:['Use the Install app button below when available.','In Chrome, you can also tap ⋮ → Install and create shortcut → Install, or Add to Home screen → Install.'],
+    steps:['Use the Install App button below when available.','In Chrome, you can also tap the three-dot menu, then Install and create shortcut, then Install, or Add to Home screen, then Install.'],
     note:'If installation is unavailable, update Chrome and open this link there. You can continue using the calculator in your browser.',
   },
   desktop:{
-    title:'Install the calculator',
+    title:'Install the Calculator',
     description:'Keep both calculators a click away in their own app window.',
-    steps:['Use the Install app button below when available.','In Chrome, choose ⋮ → Cast, save, and share → Install page as app. In Edge, use ⋯ → Apps → Install this site as an app.'],
+    steps:['Use the Install App button below when available.','In Chrome, choose the three-dot menu, then Cast, save, and share, then Install page as app. In Edge, use the three-dot menu, then Apps, then Install this site as an app.'],
     note:'Installation options depend on your browser. You can also bookmark this page.',
   },
 };
@@ -68,13 +68,16 @@ export function setupInstall({document,window,navigator,appURL}) {
   steps.replaceChildren(...guide.steps.map(text=>{const item=document.createElement('li');item.textContent=text;return item;}));
   $('install-note').textContent=guide.note;
   $('install-link-block').hidden=!guide.copy;
-  $('install-copy').textContent=environment==='samsung'?'Copy link for Chrome':'Copy calculator link';
+  $('install-copy').textContent=environment==='samsung'?'Copy Link for Chrome':'Copy Calculator Link';
 
   function update() {
     const isInstalled=installed();
     document.querySelectorAll('[data-install]').forEach(button=>{
-      const label=isInstalled?'App info':environment==='samsung'?'Install with Chrome':'Install app';
+      const label=isInstalled?'App Info':environment==='samsung'?'Install with Chrome':'Install App';
       button.setAttribute('aria-label',label);button.title=label;
+      // The visible word matches the announced name.
+      const text=isInstalled?'App Info':'Install',target=button.querySelector?.('.header-icon-label')||button;
+      if(target.textContent!==text)target.textContent=text;
     });
     $('install-title').textContent=isInstalled?'ProcessCalc':guide.title;
     $('install-description').textContent=isInstalled?'You’re using the installed app. Open it from your home screen, Dock or app launcher.':guide.description;

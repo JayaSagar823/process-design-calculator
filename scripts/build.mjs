@@ -39,7 +39,10 @@ export async function build(destination = '_site') {
   const updates=await readFile(updatesPath,'utf8');
   const updatesMarker="export const APP_VERSION='v17-source';";
   if(!updates.includes(updatesMarker))throw new Error('Missing app update build marker.');
-  await writeFile(updatesPath,updates.replace(updatesMarker,`export const APP_VERSION='${version}';`));
+  const releaseMarker="export const APP_RELEASE='source';";
+  if(!updates.includes(releaseMarker))throw new Error('Missing app release build marker.');
+  const {version:release}=JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8'));
+  await writeFile(updatesPath,updates.replace(updatesMarker,`export const APP_VERSION='${version}';`).replace(releaseMarker,`export const APP_RELEASE='${release}';`));
   await writeFile(join(output, '.nojekyll'), '');
   return { output, version, files: files.length };
 }
