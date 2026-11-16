@@ -434,3 +434,45 @@ dialog::-webkit-scrollbar-track{background:transparent}
 .home-main .tool-cards+.home-footnote{margin-top:16px}
 /* On Home the card titles sit under the All Calculators heading, so they are h3 at the card-title size. */
 .tool-card h3{font-size:20px;line-height:32px;font-weight:600;letter-spacing:.15px;margin:0}
+/* Home: Show More is a plain text button at the end of the Recent Calculations heading. */
+.section-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 12px}
+.section-heading .recent-title{margin:0}
+.link-button{flex:none;background:transparent;border:0;color:var(--accent);font-size:14px;font-weight:600;line-height:24px;letter-spacing:.4px;text-transform:capitalize;padding:4px 8px;margin-right:-8px;min-height:32px;border-radius:var(--raven-radius-row)}
+.link-button:hover{background:var(--raven-state-hover)}
+@media(max-width:599.95px){.link-button{min-height:44px}}
+/* Home and Calculators cards: a quieter lift than the card shadow, from the brand channel; dark keeps its divider edge. */
+:root{--subtle-lift:0 1px 2px rgba(var(--raven-cta-bg-rgb),.05),0 1px 6px rgba(var(--raven-cta-bg-rgb),.04)}
+.tool-card,.recent-list,.recent-empty{box-shadow:var(--subtle-lift)}
+.tool-card:hover{box-shadow:var(--subtle-lift),0 0 0 1px var(--tf-border-hover)}
+/* Home order: the calculators first, then Recent Calculations. */
+.home-main .section-heading.home-section-title{margin-top:32px}
+.home-main .tool-cards+.section-heading{margin-top:32px}
+.home-main #recent-empty+.home-footnote,.home-main .recent-list+#recent-empty+.home-footnote{margin-top:16px}
+/* On a calculator page Home is the current section (aria-current="true"), drawn like the current page. */
+.app-nav [aria-current=true]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+/* History page: a filter by tool with counts, then the shared compact rows. */
+.history-summary{margin:4px 0 0}
+.history-filter{margin:0 0 16px}
+.history-filter .segmented{flex-wrap:wrap}
+.history-filter .segmented label{padding:6px 12px;gap:6px}
+.filter-count{font-size:12px;line-height:16px;letter-spacing:.4px;font-weight:400;color:var(--muted)}
+.history-filter label:has(input:checked) .filter-count{color:var(--accent)}
+.history-main .recent-list{max-width:720px}
+/* Issue 31: on phones the calculator card title prints at the body heading size in a tighter card, so the
+   longest name fits on one line. */
+@media(max-width:599.95px){
+ .tool-card{padding:16px;gap:12px}
+ .tool-card .tool-symbol{width:40px;height:40px}
+ .tool-card .tool-card-text h2,.tool-card .tool-card-text h3{font-size:16px;line-height:24px;letter-spacing:0}
+}
+/* Bottom nav (phones and tablets): the current tab's icon sits in a solid ink pill with a bold label;
+   the other tabs are a plain icon and label in the muted ink. No fill on the tab itself. */
+@media(max-width:900px){
+ .app-nav a,.app-nav button{background:transparent;flex-direction:column;gap:4px;padding:6px 4px;min-height:60px;color:var(--muted);font-size:12px;line-height:16px;letter-spacing:.4px;font-weight:400}
+ .app-nav a svg,.app-nav button svg{box-sizing:content-box;width:22px;height:22px;padding:5px 20px;border-radius:var(--raven-radius-round);transition:background-color var(--raven-motion-base),color var(--raven-motion-base)}
+ .app-nav a:hover,.app-nav button:hover,.app-nav [aria-current]:hover{background:transparent}
+ .app-nav a:hover svg,.app-nav button:hover svg{background:var(--raven-state-hover)}
+ .app-nav [aria-current=page],.app-nav [aria-current=true]{background:transparent;color:var(--ink);font-weight:600}
+ .app-nav [aria-current] svg,.app-nav [aria-current]:hover svg{background:var(--ink);color:var(--surface)}
+ .app-nav a:focus-visible{outline-offset:-2px}
+}

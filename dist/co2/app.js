@@ -1,7 +1,7 @@
 import {fields, defaults, calculate} from './calc.js';
 import {visibleOutputs, format, initialUnits, initialOutputUnits, readRecords, reportText, reportCSV, sameInputs} from './records.js';
 import {historyLimit} from '../prefs.mjs';
-const keep = historyLimit();
+let keep = historyLimit();
 import {formatDate, formatTime, formatDateTime} from '../dates.mjs';
 import {toast, confirmAction} from '../feedback.mjs';
 
@@ -102,12 +102,17 @@ fields.forEach(([id, name, , options, note]) => {
 for (const [container, ids] of Object.entries(groups)) $(container).append(...ids.map(id => id === 'direction' ? $('direction-field') : fieldRows[id]));
 $('assumption-fields').append(...fields.slice(8).map(([id]) => fieldRows[id]));
 
+// History is re-read before every change: another tab or Settings may have changed or deleted it since.
+function fresh() {
+  try { records = readRecords(localStorage.getItem(storageKey), keep); } catch {}
+}
 function persist() {
   try { localStorage.setItem(storageKey, JSON.stringify(records)); storageOK = true; }
   catch { storageOK = false; }
   renderHistory();
 }
 function updateSaved() {
+  fresh();
   records = records.map(r => r.id === current.id ? structuredClone(current) : r);
   persist();
 }
@@ -218,6 +223,7 @@ function load(r) {
   window.dispatchEvent(new Event('fieldkit:result'));
 }
 function remove(id) {
+  fresh();
   const index = records.findIndex(r => r.id === id);
   if (index < 0) return;
   const [removed] = records.splice(index, 1);
@@ -225,6 +231,7 @@ function remove(id) {
   persist();
   $('history-status').textContent = '';
   notify('Calculation deleted', {action: 'Undo', onAction: () => {
+    fresh();
     records.splice(Math.min(index, records.length), 0, removed);
     records = records.slice(0, keep);
     persist();
@@ -242,6 +249,7 @@ $('form').addEventListener('submit', event => {
     const result = calculate(values, steam);
     current = {id: crypto.randomUUID(), date: new Date().toISOString(), values: {...values}, units: {...units}, outUnits: {...outUnits}, direction: steam, result};
     // The same inputs again refresh that saved record (moved to the top) instead of saving a copy of it.
+    fresh();
     records = [structuredClone(current), ...records.filter(r => !sameInputs(r, current))].slice(0, keep);
     persist(); showResult();
   } catch (error) {
@@ -267,7 +275,7 @@ $('clear').addEventListener('click', () => {
 });
 $('reset').addEventListener('click', () => { fields.slice(8).forEach(([id, , value]) => values[id] = value); sync(); invalidate(); });
 $('history-open').addEventListener('click', () => {
-  showList(); $('history-status').textContent = ''; renderHistory(); $('history-dialog').showModal();
+  fresh(); showList(); $('history-status').textContent = ''; renderHistory(); $('history-dialog').showModal();
 });
 $('history-close').addEventListener('click', () => $('history-dialog').close());
 $('history-dialog').addEventListener('close', () => {
@@ -313,3 +321,15 @@ sync(); invalidate(); renderHistory();
 
 // Home links a saved calculation as ?open=<id>: show it in History, where Load Calculation is.
 {const openId=new URLSearchParams(location.search).get('open');if(openId&&records.some(r => r.id === openId)){renderHistory();$('history-dialog').showModal();showDetail(openId);window.history.replaceState(null,'',location.pathname);}}
+
+// Changes from another tab or Settings: refresh the list and the saved note.
+addEventListener('storage', e => {
+  if (e.key !== storageKey && e.key !== null) return;
+  fresh();
+  if ($('history-dialog').open && selected && !records.some(r => r.id === selected)) showList();
+  renderHistory();
+});
+addEventListener('storage', e => {
+  if (e.key !== 'processcalc-settings-v1' && e.key !== null) return;
+  keep = historyLimit(); renderHistory();
+});

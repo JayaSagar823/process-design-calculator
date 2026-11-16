@@ -17,8 +17,8 @@ const copyIcon='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stro
 const trashIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg>';
 const shareIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m-4 4 4-4 4 4M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg>';
 const downloadIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg>';
-const keep=historyLimit();
-const historyStore=createHistory({getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value)},{limit:keep});
+let keep=historyLimit();
+const historyStore=createHistory({getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value)},{limit:()=>keep});
 let historyEntryId=null,historyPersistent=(()=>{try{const probe='steam-operator.probe';localStorage.setItem(probe,'1');localStorage.removeItem(probe);return true;}catch{return false;}})();
 // Outside an open modal dialog the page is inert, so the message bar moves into the top dialog to keep its Undo pressable.
 function toast(text,options){const host=[...document.querySelectorAll('dialog[open]')].pop()??document.body,node=$('toast');if(node&&node.parentElement!==host)host.append(node);showToast(text,options);}
@@ -247,3 +247,7 @@ $('share-native').onclick=async()=>{
 
 // Home links a saved calculation as ?open=<id>: show it in History, where Load Calculation is.
 {const openId=new URLSearchParams(location.search).get('open');if(openId&&historyStore.list().some(e=>e.id===openId)){openHistory(openId);window.history.replaceState(null,'',location.pathname);}}
+
+// Changes from another tab or Settings: refresh the count, the saved note and an open History.
+addEventListener('storage',e=>{if(e.key!=='steam-operator.history.v1'&&e.key!==null)return;if(historyEntryId&&!historyStore.list().some(x=>x.id===historyEntryId))historyEntryId=null;updateHistoryCount();if($('history-dialog').open)renderHistory();});
+addEventListener('storage',e=>{if(e.key!=='processcalc-settings-v1'&&e.key!==null)return;keep=historyLimit();updateHistoryCount();if($('history-dialog').open)renderHistory();});

@@ -72,6 +72,15 @@ function renderHistories() {
   }));
 }
 renderHistories();
+// Another tab saved, deleted or changed a setting: show the current state.
+addEventListener('storage', () => {
+  settings = readSettings();
+  for (const input of document.querySelectorAll('input[name="theme"]')) input.checked = input.value === settings.theme;
+  for (const input of document.querySelectorAll('input[name="limit"]')) input.checked = Number(input.value) === settings.historyLimit;
+  $('pressure-unit').value = settings.pressure;
+  $('temperature-unit').value = settings.temperature;
+  renderHistories();
+});
 
 // About
 const build = APP_VERSION.startsWith('v') ? 'Development build' : `Build ${APP_VERSION.slice(0, 7)}`;
