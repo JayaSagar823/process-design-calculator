@@ -727,3 +727,11 @@ input:focus,select:focus,textarea:focus,input:focus-visible,select:focus-visible
 .reading-empty strong{font-size:16px;line-height:22px;font-weight:600}
 .reading-empty>span:last-child>span{font-size:14px;line-height:20px;color:var(--muted)}
 .good-to-know .text-button{min-height:44px}
+/* Steam tile watermark (feedback: too big and heavy): a smaller glyph with a hairline stroke, about 2.5px drawn. */
+.bento-watermark{width:120px;height:120px;right:-6px;bottom:-14px}
+.bento-watermark svg{stroke-width:.5}
+.bento-watermark{top:-12px;bottom:auto;right:-6px}
+/* Bento tiles read top-down: the title and description sit right under the icon, not pushed to the tile's foot
+   when a neighbouring tile's longer title makes the row taller. */
+.bento-tile{justify-content:flex-start}
+@media(max-width:359.95px){.bento-watermark{width:84px;height:84px}}
