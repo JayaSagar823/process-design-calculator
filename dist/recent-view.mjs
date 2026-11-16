@@ -23,7 +23,7 @@ export function recentRow(item, base = '') {
   link.title = `${item.headline}\n${item.detail}\n${item.toolName}, ${when}`;
   link.setAttribute('aria-label', `${item.toolName}: ${item.headline}. ${when}. Open in History`);
   const symbol = document.createElement('span');
-  symbol.className = 'tool-symbol';
+  symbol.className = `tool-symbol ${item.tool}`;
   symbol.innerHTML = svg(ICONS[item.tool] ?? '');
   const body = document.createElement('span');
   body.className = 'recent-text';

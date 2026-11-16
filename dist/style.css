@@ -476,3 +476,45 @@ dialog::-webkit-scrollbar-track{background:transparent}
  .app-nav [aria-current] svg,.app-nav [aria-current]:hover svg{background:var(--ink);color:var(--surface)}
  .app-nav a:focus-visible{outline-offset:-2px}
 }
+/* Bottom nav, current tab: Raven's selected-nav fill (not ink) behind the icon, the icon and label in the brand accent. */
+@media(max-width:900px){
+ .app-nav [aria-current=page],.app-nav [aria-current=true]{color:var(--accent)}
+ .app-nav [aria-current] svg,.app-nav [aria-current]:hover svg{background:var(--raven-nav-item-bg);color:var(--accent)}
+}
+/* History: Delete All is not up front. It sits at the end of the list (reached by scrolling past the runs),
+   as a quiet text button in the error colour; it still asks first. */
+#history-dialog .history-foot,#history-dialog .history-foot{position:static;bottom:auto;margin:8px 0 0;padding:12px 0 0;box-shadow:none;background:transparent;border-top:1px solid var(--line)}
+@media(max-width:599.95px){#history-dialog .history-foot{bottom:auto;margin:8px 0 0;padding:12px 0 0}}
+#history-dialog .history-foot .danger{background:transparent;border-color:transparent;padding:4px 8px;margin-right:-8px;min-height:32px}
+#history-dialog .history-foot .danger:hover{background:var(--danger-hover);border-color:transparent}
+@media(max-width:599.95px){#history-dialog .history-foot .danger{min-height:44px}}
+/* Text buttons (Load Example, Reset Defaults) are plain: brand text, no resting fill, the hover wash only — like Show More. */
+.text-button,.co2-main .heading .text-button,.panel-heading .text-button,.heading .text-button,.co2-assumption-heading .text-button{background-color:transparent;padding:4px 8px;margin-right:-8px}
+.text-button:hover{background-color:var(--raven-state-hover)}
+/* Bottom nav, current tab: the filled selected blue of Raven's sidebar (frame blue, 15% lifted), white icon. */
+:root{--nav-selected:color-mix(in srgb,var(--raven-shell-backdrop) 85%,var(--raven-on-frame-text))}
+@media(max-width:900px){
+ .app-nav [aria-current] svg,.app-nav [aria-current]:hover svg{background:var(--nav-selected);color:var(--raven-on-frame-text)}
+ .app-nav [aria-current=page],.app-nav [aria-current=true]{color:var(--nav-selected)}
+}
+@media(max-width:900px) and (prefers-color-scheme:dark){:root:not([data-theme=light]) .app-nav :is([aria-current=page],[aria-current=true]){color:var(--accent)}:root:not([data-theme=light]) .app-nav [aria-current] svg{background:color-mix(in srgb,var(--raven-primary-dark) 85%,var(--raven-on-frame-text))}}
+@media(max-width:900px){:root[data-theme=dark] .app-nav :is([aria-current=page],[aria-current=true]){color:var(--accent)}:root[data-theme=dark] .app-nav [aria-current] svg{background:color-mix(in srgb,var(--raven-primary-dark) 85%,var(--raven-on-frame-text))}}
+/* Each calculator has its own colour, from Raven's palette, wherever its icon appears (cards, recent, History):
+   Steam the info blue, Ammonia the gold, CO₂ the green. A soft tint of it fills the tile, a deeper shade draws the icon. */
+.tool-symbol.steam{--tool:var(--raven-info)}
+.tool-symbol.ammonia{--tool:var(--raven-shell-star-gold)}
+.tool-symbol.co2{--tool:var(--raven-success)}
+.tool-symbol.steam,.tool-symbol.ammonia,.tool-symbol.co2{background:color-mix(in srgb,var(--tool) 14%,var(--surface));color:color-mix(in srgb,var(--tool),var(--raven-ink) 32%)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) :is(.tool-symbol.steam,.tool-symbol.ammonia,.tool-symbol.co2){background:color-mix(in srgb,var(--tool) 18%,var(--surface));color:var(--tool)}}
+:root[data-theme=dark] :is(.tool-symbol.steam,.tool-symbol.ammonia,.tool-symbol.co2){background:color-mix(in srgb,var(--tool) 18%,var(--surface));color:var(--tool)}
+/* History: breathing room between the filter and the list (fieldset.segmented-field zeroed the margin). */
+.history-main fieldset.history-filter{margin:0 0 20px}
+/* Ammonia's gold needs a deeper shade to read on its light tile. */
+.tool-symbol.ammonia{color:color-mix(in srgb,var(--tool),var(--raven-ink) 45%)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .tool-symbol.ammonia{color:var(--tool)}}
+:root[data-theme=dark] .tool-symbol.ammonia{color:var(--tool)}
+/* Dark bottom nav: the dark primary blue under a white icon. */
+@media(max-width:900px) and (prefers-color-scheme:dark){:root:not([data-theme=light]) .app-nav [aria-current] svg{background:var(--raven-primary-dark)}}
+@media(max-width:900px){:root[data-theme=dark] .app-nav [aria-current] svg{background:var(--raven-primary-dark)}}
+/* Header: flat, no lift; a hairline divider separates it from the page in both modes. */
+.app-header{box-shadow:none;border-bottom:1px solid var(--line)}
