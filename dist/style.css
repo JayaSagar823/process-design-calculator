@@ -652,3 +652,9 @@ input:focus,select:focus,textarea:focus,input:focus-visible,select:focus-visible
    lines read as one lockup level with the mark. */
 .brand .brand-name{line-height:20px}
 .brand .brand-credit{margin-top:0}
+/* Theme switch: each option leads with its Lucide glyph (monitor-smartphone, sun, moon) at the 18px row size. */
+.segmented label svg{width:18px;height:18px;flex:none;margin-right:6px}
+/* Home cards end in Lucide's chevron-right in the muted ink, the list-row "opens" cue, so the whole card stays
+   the target and the glyph doesn't compete with the title; it takes the accent on hover. */
+.tool-card .card-action{color:var(--muted)}
+.tool-card:hover .card-action,.tool-card:focus-visible .card-action{color:var(--accent)}
