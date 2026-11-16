@@ -25,8 +25,8 @@ export function createHistory(storage,{limit=HISTORY_LIMIT}={}){
   add(entry,{replaceSame=false}={}){
    if(!valid(entry))throw new Error('Invalid calculation snapshot');
    const rest=entries.filter(e=>e.id!==entry.id);
-   if(replaceSame&&sameCalculation(rest[0],entry))rest.shift();
-   entries=[structuredClone(entry),...rest].slice(0,limit);
+   const kept=replaceSame?rest.filter(e=>!sameCalculation(e,entry)):rest;
+   entries=[structuredClone(entry),...kept].slice(0,limit);
    return persist();
   },
   insert(entry,index){

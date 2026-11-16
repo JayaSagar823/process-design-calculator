@@ -35,7 +35,7 @@ const LIMITS={P:[611.657,1e8],T:[273.16,1073.15],Q:[0,1]},CRITICAL={P:22.064e6,T
 function limits(k){if(!LIMITS[k])return null;const capped=k!=='Q'&&inputPair.includes('Q');return {lo:LIMITS[k][0],hi:capped?CRITICAL[k]:LIMITS[k][1],below:capped};}
 function rangeText(k){const l=limits(k);if(!l)return '';const u=units[k][unit[k]],lo=fmt(fromSI(l.lo,u)),hi=fmt(fromSI(l.hi,u));return l.below?`Range: ${lo} to below ${hi} ${u.label}, the critical point`:`Range: ${lo} to ${hi} ${u.label}`;}
 // A value typed from the rounded hint can land a hair outside the exact bound; snap it onto the bound.
-function withinLimits(k){const l=limits(k);if(!l)return true;const v=values[k],eps=Math.abs(l.hi)*1e-9+1e-12;if(Math.abs(v-l.lo)<=Math.max(eps,Math.abs(l.lo)*1e-9)){values[k]=l.lo;return true;}if(!l.below&&Math.abs(v-l.hi)<=eps){values[k]=l.hi;return true;}return v>=l.lo&&(l.below?v<l.hi:v<=l.hi);}
+function withinLimits(k){const l=limits(k);if(!l)return true;const v=values[k],eps=Math.abs(l.hi)*1e-6+1e-12;if(Math.abs(v-l.lo)<=Math.abs(l.lo)*1e-6+1e-12){values[k]=l.lo;return true;}if(!l.below&&Math.abs(v-l.hi)<=eps){values[k]=l.hi;return true;}return v>=l.lo&&(l.below?v<l.hi:v<=l.hi);}
 function fieldError(k,message){const input=$('value-'+k),error=$('error-'+k);if(!input||!error)return;error.textContent=message||'';error.hidden=!message;if(message){input.setAttribute('aria-invalid','true');input.setAttribute('aria-describedby',`error-${k}${LIMITS[k]?` range-${k}`:''}`);}else{input.removeAttribute('aria-invalid');if(LIMITS[k])input.setAttribute('aria-describedby',`range-${k}`);else input.removeAttribute('aria-describedby');}}
 function checkInputs(){
  const problems=[...inputPair].map(k=>{
@@ -140,13 +140,17 @@ function savedUnit(entry,key){return units[key].find(u=>u.label===entry.units[ke
 function savedValue(entry,key,value){return value===null?'N/A':resultFormat(fromSI(value,savedUnit(entry,key)));}
 function savedOutputs(entry){return {...entry.result,Q:entry.result.phase==='Superheated vapor'?1:entry.result.phase==='Compressed liquid'?0:entry.result.Q};}
 function dateLabel(entry){return formatDateTime(entry.createdAt);}
-function updateHistoryCount(){
+function updateHistoryCount(){checkSavedNote();
  const n=historyStore.list().length;$('history-count').textContent=n;
  $('history-meta').textContent=historyPersistent?`${n} saved on this device. The last ${keep} are kept.`:'Saved for this session only. This browser can\'t keep history.';
  $('history-clear-all').disabled=!n;
 }
 function openHistory(id=null){historyEntryId=id;$('history-status').textContent='';renderHistory();$('history-dialog').showModal();}
 function savedNote(text){$('saved-note').textContent=text;$('saved-note').hidden=!text;}
+// Once the saved record is deleted (one row or all), the note no longer says it is in History.
+function checkSavedNote(){if(result&&$('saved-note').textContent&&!historyStore.list().some(e=>e.createdAt===resultCreatedAt))savedNote('');}
+// The Undo message moves into the open History window; put it back on the page when the window closes.
+$('history-dialog').addEventListener('close',()=>{const bar=$('toast');if(bar&&bar.parentElement!==document.body)document.body.append(bar);});
 function deleteButton(entry,attributes=''){const label=`Delete calculation from ${dateLabel(entry)}`;return `<button type="button" class="action-icon" ${attributes} aria-label="${label}" title="${label}">${trashIcon}</button>`;}
 
 function saveCalculation(){
@@ -164,7 +168,7 @@ function renderHistory(){
  updateHistoryCount();
  const content=$('history-content');
  if(entry){
-  content.innerHTML=`<div class="history-detail-actions"><button id="history-back" class="secondary" type="button">Back to History</button><button id="history-load" class="primary" type="button">Load Calculation</button>${deleteButton(entry,'id="history-delete-one"')}</div><h3 class="saved-phase">${phaseLabel(entry.result)}</h3><p class="saved-date">${dateLabel(entry)}</p><div class="saved-exports">${exportActions()}</div>${saturationMarkup(entry.result,Object.fromEntries(Object.keys(units).map(k=>[k,Math.max(0,units[k].findIndex(u=>u.label===entry.units[k]))])),false)}<h3 class="history-section-title">Input</h3>${historyRows(entry,'input')}<h3 class="history-section-title">Output</h3>${historyRows(entry,'output')}`;
+  content.innerHTML=`<div class="history-detail-actions">${deleteButton(entry,'id="history-delete-one"')}<button id="history-back" class="secondary" type="button">Back to History</button><button id="history-load" class="primary" type="button">Load Calculation</button></div><h3 class="saved-phase">${phaseLabel(entry.result)}</h3><p class="saved-date">${dateLabel(entry)}</p><div class="saved-exports">${exportActions()}</div>${saturationMarkup(entry.result,Object.fromEntries(Object.keys(units).map(k=>[k,Math.max(0,units[k].findIndex(u=>u.label===entry.units[k]))])),false)}<h3 class="history-section-title">Input</h3>${historyRows(entry,'input')}<h3 class="history-section-title">Output</h3>${historyRows(entry,'output')}`;
   bindExportActions(content.querySelector('.saved-exports'),()=>entry);
   $('history-delete-one').onclick=()=>deleteHistoryEntry(entry.id);
   $('history-back').onclick=()=>{historyEntryId=null;renderHistory();};
@@ -178,7 +182,7 @@ function renderHistory(){
   content.querySelectorAll('[data-history-copy]').forEach(button=>button.onclick=()=>{const [kind,key]=button.dataset.historyCopy.split(':');const data=kind==='input'?entry.inputs:savedOutputs(entry);copyValue(savedValue(entry,key,data[key]),`${labels[key]} ${kind}`);});
  }else{
   historyEntryId=null;
-  content.innerHTML=entries.length?entries.map((entry,index)=>`<div class="history-entry"><button type="button" class="history-card" data-history-index="${index}"><span class="history-card-top"><strong>${phaseLabel(entry.result)}</strong><span>View</span></span><time>${dateLabel(entry)}</time><span class="history-inputs">${Object.entries(entry.inputs).map(([k,v])=>`${labels[k]}: ${savedValue(entry,k,v)} ${savedUnit(entry,k).label}`).join(', ')}</span></button>${deleteButton(entry,`data-history-delete="${index}"`)}</div>`).join(''):'<div class="history-empty">No saved calculations yet.</div>';
+  content.innerHTML=entries.length?entries.map((entry,index)=>`<div class="history-entry"><button type="button" class="history-card" data-history-index="${index}"><span class="history-card-top"><strong>${phaseLabel(entry.result)}</strong></span><time>${dateLabel(entry)}</time><span class="history-inputs">${Object.entries(entry.inputs).map(([k,v])=>`${labels[k]}: ${savedValue(entry,k,v)} ${savedUnit(entry,k).label}`).join(', ')}</span></button>${deleteButton(entry,`data-history-delete="${index}"`)}</div>`).join(''):'<div class="history-empty">No saved calculations yet.</div>';
   content.querySelectorAll('[data-history-delete]').forEach(button=>button.onclick=()=>deleteHistoryEntry(entries[Number(button.dataset.historyDelete)].id));
   content.querySelectorAll('[data-history-index]').forEach(button=>button.onclick=()=>{historyEntryId=entries[Number(button.dataset.historyIndex)].id;renderHistory();});
  }

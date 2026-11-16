@@ -1,7 +1,8 @@
-// Home: the newest saved calculations from every calculator; each opens in its tool's History.
+// Home: the newest saved calculations from every calculator, as a short list; each opens in its tool's History.
 import {recentCalculations} from './recent.mjs';
 import {formatDateTime} from './dates.mjs';
 
+const SHOWN = 3, MORE = 9;
 const ICONS = {
   steam: '<path d="M6 15c-4-4 4-5 0-10m6 10c-4-4 4-5 0-10m6 10c-4-4 4-5 0-10M4 20h16"/>',
   ammonia: '<path d="M9 3h6m-5 0v6L4 19a1.3 1.3 0 0 0 1.2 2h13.6a1.3 1.3 0 0 0 1.2-2L14 9V3M7 15h10"/><path d="M11 18h2"/>',
@@ -15,26 +16,35 @@ const text = (tag, value, className) => {
   return node;
 };
 
-let rows = [];
-try { rows = recentCalculations(localStorage); } catch { rows = []; }
-const list = document.getElementById('recent-list');
-list.replaceChildren(...rows.map(row => {
+function row(item) {
   const link = document.createElement('a');
   link.className = 'recent-card';
-  link.href = row.href;
+  link.href = item.href;
+  const when = formatDateTime(item.date);
+  link.title = `${item.headline}\n${item.detail}\n${item.toolName}, ${when}`;
+  link.setAttribute('aria-label', `${item.toolName}: ${item.headline}. ${when}. Open in History`);
   const symbol = document.createElement('span');
   symbol.className = 'tool-symbol';
-  symbol.innerHTML = svg(ICONS[row.tool] ?? '');
+  symbol.innerHTML = svg(ICONS[item.tool] ?? '');
   const body = document.createElement('span');
   body.className = 'recent-text';
-  body.append(text('span', row.toolName, 'recent-tool'), text('strong', row.headline, 'recent-headline'),
-    text('span', row.detail, 'recent-detail'));
-  const when = text('time', formatDateTime(row.date), 'recent-date');
-  when.dateTime = row.date;
-  body.append(when);
+  body.append(text('strong', item.headline, 'recent-headline'), text('span', `${item.toolName}, ${when}`, 'recent-meta'));
   link.append(symbol, body);
-  link.setAttribute('aria-label', `${row.toolName}: ${row.headline}. ${formatDateTime(row.date)}. Open in History`);
   return link;
-}));
-document.getElementById('recent-empty').hidden = rows.length > 0;
-document.querySelector('.recent-more').hidden = rows.length === 0;
+}
+
+let items = [];
+try { items = recentCalculations(localStorage, MORE); } catch { items = []; }
+const list = document.getElementById('recent-list');
+const more = document.getElementById('recent-toggle');
+let expanded = false;
+function render() {
+  list.replaceChildren(...items.slice(0, expanded ? MORE : SHOWN).map(row));
+  more.hidden = items.length <= SHOWN;
+  more.textContent = expanded ? 'Show Less' : 'Show More';
+  more.setAttribute('aria-expanded', String(expanded));
+}
+more.addEventListener('click', () => { expanded = !expanded; render(); });
+render();
+list.hidden = items.length === 0;
+document.getElementById('recent-empty').hidden = items.length > 0;

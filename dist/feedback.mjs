@@ -1,6 +1,7 @@
 // Shared feedback for every calculator: a short message (with an optional action such as Undo)
 // and a confirmation that a destructive action must pass first (Raven: red confirm, Cancel, Escape = no).
 let toastTimer;
+let resume = () => {};
 
 function toastElement() {
   let node = document.getElementById('toast');
@@ -12,6 +13,15 @@ function toastElement() {
   }
   node.setAttribute('role', 'status');
   node.setAttribute('aria-live', 'polite');
+  if (!node.dataset.paused) {
+    // The message waits while the pointer or keyboard focus is on it, so Undo stays reachable.
+    node.dataset.paused = 'true';
+    const pause = () => clearTimeout(toastTimer);
+    node.addEventListener('mouseenter', pause);
+    node.addEventListener('focusin', pause);
+    node.addEventListener('mouseleave', () => resume());
+    node.addEventListener('focusout', () => resume());
+  }
   return node;
 }
 
@@ -28,7 +38,10 @@ export function toast(text, {action, onAction, duration} = {}) {
     node.append(button);
   }
   node.hidden = false;
-  toastTimer = setTimeout(() => { node.hidden = true; }, duration ?? (action ? 6000 : 2500));
+  const wait = duration ?? (action ? 6000 : 2500);
+  const hide = ms => { clearTimeout(toastTimer); toastTimer = setTimeout(() => { if (!node.contains(document.activeElement) && !node.matches(':hover')) node.hidden = true; else hide(1500); }, ms); };
+  resume = () => hide(2500);
+  hide(wait);
 }
 
 let confirmDialog;

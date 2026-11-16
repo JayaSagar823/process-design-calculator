@@ -189,7 +189,7 @@ function showDetail(id) {
     const index = records.findIndex(x => x.id === id);
     showList(); historyCards()[index]?.focus({preventScroll: true});
   });
-  actions.append(back, button('Load Calculation', 'primary', () => load(r)), button(deleteLabel(r), 'action-icon', () => remove(r.id), deleteIcon));
+  actions.append(button(deleteLabel(r), 'action-icon', () => remove(r.id), deleteIcon), back, button('Load Calculation', 'primary', () => load(r)));
   const section = (title, rows) => {
     const heading = el('h3', title); heading.className = 'history-section-title';
     return [heading, ...rows.map(([label, value]) => {
@@ -241,10 +241,8 @@ $('form').addEventListener('submit', event => {
     const steam = direction();
     const result = calculate(values, steam);
     current = {id: crypto.randomUUID(), date: new Date().toISOString(), values: {...values}, units: {...units}, outUnits: {...outUnits}, direction: steam, result};
-    // The same inputs again refresh the newest record instead of saving a copy of it.
-    records = records[0] && sameInputs(records[0], current)
-      ? [structuredClone(current), ...records.slice(1)]
-      : [structuredClone(current), ...records].slice(0, keep);
+    // The same inputs again refresh that saved record (moved to the top) instead of saving a copy of it.
+    records = [structuredClone(current), ...records.filter(r => !sameInputs(r, current))].slice(0, keep);
     persist(); showResult();
   } catch (error) {
     $('error').textContent = error.message; $('error').hidden = false;
@@ -260,11 +258,12 @@ $('form').addEventListener('submit', event => {
 directionInputs().forEach(input => input.addEventListener('change', invalidate));
 $('example').addEventListener('click', async () => {
   const typed = mainFields.some(([id]) => values[id] !== null || $(id).validity.badInput);
-  if (typed && !(await confirmAction({title: 'Replace Your Readings?', message: 'Load Example replaces the readings you have entered.', confirmLabel: 'Replace'}))) return;
+  const edited = fields.slice(8).some(([id, , value]) => values[id] !== value);
+  if ((typed || edited) && !(await confirmAction({title: 'Replace Your Readings?', message: edited ? 'Load Example replaces your readings and resets the assumptions you edited.' : 'Load Example replaces the readings you have entered.', confirmLabel: 'Replace'}))) return;
   values = defaults(); setDirection('export'); sync(); invalidate();
 });
 $('clear').addEventListener('click', () => {
-  mainFields.forEach(([id]) => values[id] = null); sync(); invalidate(); $('power').focus();
+  mainFields.forEach(([id]) => values[id] = null); setDirection('export'); sync(); invalidate(); $('power').focus();
 });
 $('reset').addEventListener('click', () => { fields.slice(8).forEach(([id, , value]) => values[id] = value); sync(); invalidate(); });
 $('history-open').addEventListener('click', () => {

@@ -36,7 +36,7 @@ export function reportRows(record) {
   const r = validateRecord(record);
   const inputRows = list => list.map(f => [f[1], r.values[f[0]] * f[3][r.units[f[0]]], r.units[f[0]], f[4]]);
   return [
-    ['ProcessCalc · CO₂ Emissions Calculator'], ['Basis', 'Based on IPCC guidance; the default natural gas factor is 56.1 tCO₂/TJ on an LHV basis. Electricity and steam allowances are project assumptions.'], ['Date', r.date], ['Steam direction', r.direction], [],
+    ['ProcessCalc · CO₂ Emissions'], ['Basis', 'Based on IPCC guidance; the default natural gas factor is 56.1 tCO₂/TJ on an LHV basis. Electricity and steam allowances are project assumptions.'], ['Date', r.date], ['Steam direction', r.direction], [],
     ['Inputs', 'Value', 'Unit', 'Remark'], ...inputRows(fields.slice(0, 8)), [],
     ['Assumptions', 'Value', 'Unit', 'Remark'], ...inputRows(fields.slice(8)), [],
     ['Emissions from Power Generation', 'Value', 'Unit', 'Remark'],
