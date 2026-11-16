@@ -543,3 +543,27 @@ main.history-main,main.settings-main{max-width:calc(720px + 64px)}
 .saturation-value strong small{font-size:14px;line-height:20px;font-weight:400;letter-spacing:.25px;color:var(--muted);margin-left:4px}
 /* Calculator cards (form and results, every tool) match Home and Settings: 16px corners, the same subtle lift. */
 .panel{border-radius:var(--raven-radius-table);box-shadow:var(--subtle-lift)}
+/* Phones: each saturation value sits directly under its label, from the left edge, unit beside it and the
+   copy button at the line's end, so the number reads as the label's answer, not a figure floating away from it. */
+@media(max-width:599.95px){
+ .saturation-row{flex-direction:column;align-items:stretch;gap:4px}
+ .saturation-value{align-self:stretch;display:flex;align-items:center;justify-content:space-between;gap:8px}
+ .saturation-value strong{text-align:left}
+}
+/* Steam results: the phase chip sits under the Results heading, at the left, above Share and Download. */
+#output-panel>#phase{display:inline-flex;max-width:none;text-align:left;margin:-8px 0 12px}
+/* Results heading: Share and Download sit beside it at the right; the phase chip goes under it.
+   Phones keep the line by showing the two as round icon buttons; their names stay for screen readers. */
+.panel-heading #result-actions,.panel-heading #result-actions .export-actions{margin:0}
+.panel-heading #result-actions .export-actions{justify-content:flex-end;flex-wrap:nowrap}
+@media(max-width:599.95px){
+ .panel-heading .result-actions .with-icon,.heading .result-actions .with-icon,.panel-heading .export-actions .with-icon{width:44px;min-width:44px;height:44px;min-height:44px;padding:0;justify-content:center;gap:0;border-radius:var(--raven-radius-round)}
+ .panel-heading .with-icon span,.heading .result-actions .with-icon span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+}
+/* A result whose unit can't change shows it as text in the unit column (nothing for a dimensionless number). */
+.unit-static{font-size:16px;line-height:24px;letter-spacing:.15px;color:var(--ink);padding:0 14px}
+/* Steam's phase is a fact about the result, not an action: a neutral tag (ink tint, ink text), not brand blue. */
+#output-panel>#phase,#phase{background:color-mix(in srgb,var(--raven-ink) 7%,transparent);color:var(--ink)}
+/* Settings: each switch spans its card, options sharing the width equally (as History's filter does). */
+.settings-section .segmented{display:flex;width:100%}
+.settings-section .segmented label{flex:1}

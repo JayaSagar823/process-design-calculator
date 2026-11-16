@@ -57,9 +57,14 @@ function renderHistories() {
     remove.disabled = n === 0;
     remove.setAttribute('aria-label', `Delete all saved ${history.name} calculations`);
     remove.addEventListener('click', async () => {
+      // Count at click time: another tab may have saved or deleted since this row was drawn.
+      const now = count(history.key);
+      if (now === 0) { renderHistories(); return; }
       const ok = await confirmAction({
-        title: 'Delete All Saved Calculations?',
-        message: `This removes all ${n} saved ${history.name} calculations from this device. This can't be undone.`,
+        title: `Delete ${history.name} History?`,
+        message: now === 1
+          ? `This removes 1 saved calculation from this device. This can't be undone.`
+          : `This removes all ${now} saved calculations from this device. This can't be undone.`,
         confirmLabel: 'Delete All',
       });
       if (!ok) return;

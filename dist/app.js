@@ -27,6 +27,7 @@ async function copyValue(text,label){
  catch{toast('Copy unavailable. Select the value and copy it manually.');}
 }
 function copyButton(kind,key,disabled=false){return `<button type="button" class="copy-value" data-copy-${kind}="${key}" aria-label="Copy ${labels[key]} ${kind} value" title="Copy value" ${disabled?'disabled':''}>${copyIcon}</button>`;}
+function unitControl(k){if(units[k].length>1)return `<select data-unit="${k}" aria-label="${labels[k]} result unit">${options(k)}</select>`;const label=units[k][0].label;return `<span class="unit-static">${label==='—'?'':label}</span>`;}
 function options(k){return units[k].map((u,i)=>`<option value="${i}" ${i===unit[k]?'selected':''}>${u.label}</option>`).join('');}
 function complete(){return selected.length===2&&selected.every(k=>Number.isFinite(values[k]));}
 // The engine's own limits (engine/thermo.mjs), shown under the field and checked before calculating.
@@ -118,13 +119,13 @@ function renderResult(){
  $('result-actions').hidden=!result;
  $('result-actions').innerHTML=exportActions({main:true,disabled:!result});bindExportActions($('result-actions'),currentSnapshot);
  $('phase').hidden=!result;$('phase').textContent=result?phaseLabel(result):'';
- $('results').innerHTML=`${saturationMarkup(result)}<div class="output-columns" aria-hidden="true"><span>Property</span><span>Value</span><span>Unit</span></div><div class="result-grid">${Object.keys(labels).map(k=>`<div class="result-item"><label>${labels[k].replace('Compressibility','Compressi&shy;bility')}</label><div class="output-value-cell"><strong data-result="${k}" class="${shown?'':'pending'}">${!shown?'—':shown[k]===null?'N/A':resultFormat(display(k,shown[k]))}</strong></div><select data-unit="${k}" aria-label="${labels[k]} result unit">${options(k)}</select>${copyButton('output',k,!shown||shown[k]===null)}</div>`).join('')}</div>`;
+ $('results').innerHTML=`${saturationMarkup(result)}<div class="output-columns" aria-hidden="true"><span>Property</span><span>Value</span><span>Unit</span></div><div class="result-grid">${Object.keys(labels).map(k=>`<div class="result-item"><label>${labels[k].replace('Compressibility','Compressi&shy;bility')}</label><div class="output-value-cell"><strong data-result="${k}" class="${shown?'':'pending'}">${!shown?'—':shown[k]===null?'N/A':resultFormat(display(k,shown[k]))}</strong></div>${unitControl(k)}${copyButton('output',k,!shown||shown[k]===null)}</div>`).join('')}</div>`;
  $('results').querySelectorAll('[data-copy-output]').forEach(button=>button.onclick=()=>{const k=button.dataset.copyOutput;copyValue($('results').querySelector(`[data-result="${k}"]`).textContent,`${labels[k]} output`);});
  $('results').querySelectorAll('[data-saturation-copy]').forEach(button=>button.onclick=()=>{const k=button.dataset.saturationCopy;const n=k==='T'?result.saturation.temperatureAtPressure:result.saturation.pressureAtTemperature;copyValue(resultFormat(fromSI(n,units[k][unit[k]])),`Saturation ${k==='T'?'temperature':'pressure'}`);});
  bindUnits($('results'));
  $('results-note').hidden=!result;
  if(!result)savedNote('');
- $('results-note').textContent=!result?'':vapor?'Vapor fraction 1 means all vapor; saturation quality is not defined for superheated steam. N/A means not applicable.':result.phase==='Wet steam'?'N/A: wet-steam heat capacities and transport properties require a two-phase model.':result.phase==='Supercritical fluid'?'Vapor fraction is not defined for supercritical fluid. N/A means not applicable.':'N/A means not defined or not modeled for this phase.';
+ $('results-note').textContent=!result?'':vapor?'Superheated steam is all vapor (fraction 1). N/A: not applicable.':result.phase==='Wet steam'?'N/A: not modelled for wet steam.':result.phase==='Supercritical fluid'?'No vapor fraction above the critical point. N/A: not applicable.':'N/A: not defined for this phase.';
 }
 $('calculate').onclick=calculate;
 $('clear').onclick=()=>{values={};draft={};renderInputs();invalidate();$('value-'+inputPair[0]).focus();};
