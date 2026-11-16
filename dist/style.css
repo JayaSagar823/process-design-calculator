@@ -518,3 +518,8 @@ dialog::-webkit-scrollbar-track{background:transparent}
 @media(max-width:900px){:root[data-theme=dark] .app-nav [aria-current] svg{background:var(--raven-primary-dark)}}
 /* Header: flat, no lift; a hairline divider separates it from the page in both modes. */
 .app-header{box-shadow:none;border-bottom:1px solid var(--line)}
+/* Saved-calculation lists (History, Home's recent): flat, with the divider border instead of a lift. */
+.recent-list,.recent-empty{box-shadow:none;border:1px solid var(--line)}
+/* History and Settings: one centred reading column (720px plus the page gutters) on wide screens. */
+main.history-main,main.settings-main{max-width:calc(720px + 64px)}
+@media(max-width:600px){main.history-main,main.settings-main{max-width:none}}
