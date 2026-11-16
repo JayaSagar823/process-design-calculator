@@ -10,7 +10,11 @@ addEventListener('fieldkit:result',()=>{
  output.focus({preventScroll:true});
  const headerBottom=Math.max(0,document.querySelector('.app-header')?.getBoundingClientRect().bottom||0);
  const top=output.getBoundingClientRect().top;
- if(top<headerBottom||top>innerHeight-120)output.scrollIntoView({behavior:reduce()?'instant':'smooth',block:'start'});
+ // Results under the form (phones, tablets): always bring them to the top, since the values sit below the
+ // card's heading. Side by side (desktop): scroll only when the results are out of view.
+ const form=$('input-panel'),stacked=!form||top>=form.getBoundingClientRect().bottom-2;
+ const offTop=top<headerBottom||top>innerHeight-120,notAtTop=Math.abs(top-headerBottom)>32;
+ if(stacked?notAtTop:offTop)output.scrollIntoView({behavior:reduce()?'instant':'smooth',block:'start'});
 });
 let offlineReady=false,offlineUnavailable=false;
 function setConnection(text,state){document.querySelectorAll('[data-connection]').forEach(el=>{el.textContent=text;el.dataset.state=state;});}

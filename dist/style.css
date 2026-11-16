@@ -523,3 +523,21 @@ dialog::-webkit-scrollbar-track{background:transparent}
 /* History and Settings: one centred reading column (720px plus the page gutters) on wide screens. */
 main.history-main,main.settings-main{max-width:calc(720px + 64px)}
 @media(max-width:600px){main.history-main,main.settings-main{max-width:none}}
+/* Settings cards match Home's calculator cards: 16px corners and the same subtle lift. */
+.settings-section.panel{border-radius:var(--raven-radius-table);box-shadow:var(--subtle-lift)}
+/* History filter: as wide as the list below it, the four options sharing the width. */
+.history-filter .segmented{display:flex;width:100%;flex-wrap:nowrap}
+.history-filter .segmented label{flex:1;justify-content:center;padding:6px 8px}
+/* Desktop header tabs: each fits its label (16px each side), 8px apart, centred; no stretched pills. */
+@media(min-width:901px){
+ .app-nav>div{display:flex;justify-content:center;gap:8px;width:max-content;max-width:none;margin:0 auto;grid-template-columns:none}
+ .app-nav a,.app-nav button{flex:none;padding:8px 16px;gap:8px;min-height:40px}
+}
+/* Home: Recent Calculations runs the same width as the calculator cards above it. */
+.home-main .recent-list,.home-main .recent-empty{max-width:none}
+/* Toggles (History filter, theme, history limit, steam direction): the divider border, like the lists, not the darker field edge. */
+.segmented{border-color:var(--line)}
+/* Steam saturation values (feedback: make them stand out): the number at 24px with even-width digits,
+   its unit smaller and muted so the figure carries the weight. */
+.saturation-value strong{font-size:24px;line-height:32px;font-weight:600;letter-spacing:0;font-variant-numeric:tabular-nums}
+.saturation-value strong small{font-size:14px;line-height:20px;font-weight:400;letter-spacing:.25px;color:var(--muted);margin-left:4px}
