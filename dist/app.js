@@ -52,10 +52,12 @@ function checkInputs(){
  return !first;
 }
 function controls(){
- $('calculate').disabled=!ready||busy;
+ // Calculate waits for both readings of the chosen pair; the status line says what's missing.
+ const filled=[...inputPair].filter(k=>(draft[k]??'').trim()).length;
+ $('calculate').disabled=!ready||busy||filled<2;
  $('clear').disabled=!result&&!keys.some(k=>(draft[k]??'').trim());
  $('calculate').textContent=busy?'Calculating…':'Calculate';
- $('input-status').textContent=loadError?'Calculator unavailable. Please reload.':!ready?'Preparing calculator…':busy?'Calculating properties…':'';
+ $('input-status').textContent=loadError?'Calculator unavailable. Please reload.':!ready?'Preparing calculator…':busy?'Calculating properties…':filled<2?(filled?'Enter one more reading to calculate.':'Enter both readings to calculate.'):'';
  $('input-status').hidden=!$('input-status').textContent;
 }
 function syncInputState(){

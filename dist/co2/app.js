@@ -63,12 +63,20 @@ function showEmpty(empty) {
   }
   savedNote();
 }
+// Calculate waits for every reading; the line beside it counts what's left.
+function updateCalculate() {
+  const left = mainFields.filter(([id]) => values[id] === null && !$(id).validity.badInput).length;
+  $('calculate').disabled = left > 0;
+  $('calculate-hint').hidden = left === 0;
+  $('calculate-hint').textContent = left === 1 ? '1 reading left to fill in.' : `${left} readings left to fill in.`;
+}
 function invalidate() {
   current = null;
   $('error').hidden = true;
   $('result-status').textContent = '';
   fields.forEach(([id]) => { $(id).removeAttribute('aria-invalid'); $(id).setAttribute('aria-describedby', id + '-hint'); });
   showEmpty(true);
+  updateCalculate();
 }
 
 function showField(id) {
@@ -217,6 +225,7 @@ function showDetail(id) {
 function load(r) {
   invalidate();
   current = structuredClone(r); values = {...r.values}; units = {...r.units}; outUnits = {...r.outUnits};
+  queueMicrotask(updateCalculate);
   setDirection(r.direction); sync(); render();
   $('history-dialog').close();
   notify('Saved calculation loaded');
