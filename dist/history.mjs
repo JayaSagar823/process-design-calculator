@@ -16,9 +16,9 @@ export function sameCalculation(a,b){
  const ka=Object.keys(a.inputs??{}).sort(),kb=Object.keys(b.inputs??{}).sort();
  return ka.join()===kb.join()&&ka.every(k=>a.inputs[k]===b.inputs[k])&&Object.keys(units).every(k=>a.units?.[k]===b.units?.[k]);
 }
-export function createHistory(storage){
+export function createHistory(storage,{limit=HISTORY_LIMIT}={}){
  let entries=[];
- try {const parsed=JSON.parse(storage.getItem(HISTORY_KEY)??'[]');if(Array.isArray(parsed)){entries=parsed.filter(valid).slice(0,HISTORY_LIMIT);if(parsed.length>HISTORY_LIMIT)storage.setItem(HISTORY_KEY,JSON.stringify(entries));}}catch{}
+ try {const parsed=JSON.parse(storage.getItem(HISTORY_KEY)??'[]');if(Array.isArray(parsed)){entries=parsed.filter(valid).slice(0,limit);if(parsed.length>limit)storage.setItem(HISTORY_KEY,JSON.stringify(entries));}}catch{}
  const persist=()=>{try{storage.setItem(HISTORY_KEY,JSON.stringify(entries));return true;}catch{return false;}};
  return {
   list:()=>structuredClone(entries),
@@ -26,14 +26,14 @@ export function createHistory(storage){
    if(!valid(entry))throw new Error('Invalid calculation snapshot');
    const rest=entries.filter(e=>e.id!==entry.id);
    if(replaceSame&&sameCalculation(rest[0],entry))rest.shift();
-   entries=[structuredClone(entry),...rest].slice(0,HISTORY_LIMIT);
+   entries=[structuredClone(entry),...rest].slice(0,limit);
    return persist();
   },
   insert(entry,index){
    if(!valid(entry))throw new Error('Invalid calculation snapshot');
    const rest=entries.filter(e=>e.id!==entry.id);
    rest.splice(Math.max(0,Math.min(index,rest.length)),0,structuredClone(entry));
-   entries=rest.slice(0,HISTORY_LIMIT);
+   entries=rest.slice(0,limit);
    return persist();
   },
   remove(id){entries=entries.filter(entry=>entry.id!==id);return persist();},

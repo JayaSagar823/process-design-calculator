@@ -1,4 +1,5 @@
 import {units,toSI,fromSI} from './units.mjs';
+import {readSettings,historyLimit} from './prefs.mjs';
 import {createHistory} from './history.mjs';
 import {propertyLabels as labels,formatValue as resultFormat,phaseName as phaseLabel,createReport} from './report.mjs';
 import {formatDateTime,formatTime} from './dates.mjs';
@@ -7,6 +8,8 @@ const $=id=>document.getElementById(id);
 const keys=['P','T','Q','H','S'];
 let inputPair='PT';
 let selected=[],values={},draft={},unit=Object.fromEntries(Object.keys(units).map(k=>[k,0])),result=null,resultCreatedAt=null,ready=false,busy=false,seq=0,loadError=false;
+// Settings can choose the units new calculations start in; "default" keeps this calculator's own.
+{const s=readSettings(),p=units.P.findIndex(u=>u.label===s.pressure),t=units.T.findIndex(u=>u.label===s.temperature);if(p>=0)unit.P=p;if(t>=0)unit.T=t;}
 const worker=new Worker(new URL('./engine/worker.mjs',import.meta.url),{type:'module'});
 const fmt=n=>Number(n.toPrecision(7)).toString();
 const display=(k,v)=>fromSI(v,units[k][unit[k]]);
@@ -14,7 +17,8 @@ const copyIcon='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stro
 const trashIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg>';
 const shareIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m-4 4 4-4 4 4M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg>';
 const downloadIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg>';
-const historyStore=createHistory({getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value)});
+const keep=historyLimit();
+const historyStore=createHistory({getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value)},{limit:keep});
 let historyEntryId=null,historyPersistent=(()=>{try{const probe='steam-operator.probe';localStorage.setItem(probe,'1');localStorage.removeItem(probe);return true;}catch{return false;}})();
 // Outside an open modal dialog the page is inert, so the message bar moves into the top dialog to keep its Undo pressable.
 function toast(text,options){const host=[...document.querySelectorAll('dialog[open]')].pop()??document.body,node=$('toast');if(node&&node.parentElement!==host)host.append(node);showToast(text,options);}
@@ -138,7 +142,7 @@ function savedOutputs(entry){return {...entry.result,Q:entry.result.phase==='Sup
 function dateLabel(entry){return formatDateTime(entry.createdAt);}
 function updateHistoryCount(){
  const n=historyStore.list().length;$('history-count').textContent=n;
- $('history-meta').textContent=historyPersistent?`${n} saved on this device. The last 10 are kept.`:'Saved for this session only. This browser can\'t keep history.';
+ $('history-meta').textContent=historyPersistent?`${n} saved on this device. The last ${keep} are kept.`:'Saved for this session only. This browser can\'t keep history.';
  $('history-clear-all').disabled=!n;
 }
 function openHistory(id=null){historyEntryId=id;$('history-status').textContent='';renderHistory();$('history-dialog').showModal();}
@@ -236,3 +240,6 @@ $('share-native').onclick=async()=>{
  try{await navigator.share({title:'Steam Properties results',text:$('share-report').value});}
  catch(error){if(error.name!=='AbortError')$('share-status').textContent='Sharing is unavailable here. Use Copy report instead.';}
 };
+
+// Home links a saved calculation as ?open=<id>: show it in History, where Load Calculation is.
+{const openId=new URLSearchParams(location.search).get('open');if(openId&&historyStore.list().some(e=>e.id===openId)){openHistory(openId);window.history.replaceState(null,'',location.pathname);}}

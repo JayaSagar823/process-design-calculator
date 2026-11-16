@@ -22,11 +22,11 @@ export function validateRecord(record) {
   };
 }
 
-export function readRecords(raw) {
+export function readRecords(raw, limit = 10) {
   try {
     const data = JSON.parse(raw || '[]');
     if (!Array.isArray(data)) return [];
-    return data.slice(0, 10).flatMap(record => {
+    return data.slice(0, limit).flatMap(record => {
       try { return [validateRecord(record)]; } catch { return []; }
     });
   } catch { return []; }

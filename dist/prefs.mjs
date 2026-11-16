@@ -3,10 +3,10 @@
 // calculators read the units and history limit when they start.
 export const SETTINGS_KEY = 'processcalc-settings-v1';
 export const THEMES = ['system', 'light', 'dark'];
-export const PRESSURE_UNITS = ['bar(a)', 'MPa(a)', 'kPa(a)', 'psia'];
-export const TEMPERATURE_UNITS = ['°C', '°F', 'K'];
+export const PRESSURE_UNITS = ['default', 'bar(a)', 'MPa(a)', 'kPa(a)', 'psia'];
+export const TEMPERATURE_UNITS = ['default', '°C', '°F', 'K'];
 export const HISTORY_LIMITS = [10, 25, 50];
-export const DEFAULTS = {theme: 'system', pressure: 'bar(a)', temperature: '°C', historyLimit: 10};
+export const DEFAULTS = {theme: 'system', pressure: 'default', temperature: 'default', historyLimit: 10};
 
 // The three calculators' saved histories, for Home's recent list and Settings.
 export const HISTORIES = [

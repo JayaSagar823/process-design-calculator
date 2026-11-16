@@ -1,5 +1,7 @@
 import {fields, defaults, calculate} from './calc.js';
 import {visibleOutputs, format, initialUnits, initialOutputUnits, readRecords, reportText, reportCSV, sameInputs} from './records.js';
+import {historyLimit} from '../prefs.mjs';
+const keep = historyLimit();
 import {formatDate, formatTime, formatDateTime} from '../dates.mjs';
 import {toast, confirmAction} from '../feedback.mjs';
 
@@ -160,7 +162,7 @@ const historyCards = () => [...$('history-list').querySelectorAll('.history-card
 
 function renderHistory() {
   $('delete-all').disabled = !records.length;
-  $('history-meta').textContent = storageOK ? `${records.length} saved on this device. The last 10 are kept.` : "Saved for this session only. This browser can't keep history.";
+  $('history-meta').textContent = storageOK ? `${records.length} saved on this device. The last ${keep} are kept.` : "Saved for this session only. This browser can't keep history.";
   $('history-list').replaceChildren(...records.map(r => {
     const row = el('div'); row.className = 'history-row';
     const view = button('', 'history-card', () => showDetail(r.id));
@@ -224,7 +226,7 @@ function remove(id) {
   $('history-status').textContent = '';
   notify('Calculation deleted', {action: 'Undo', onAction: () => {
     records.splice(Math.min(index, records.length), 0, removed);
-    records = records.slice(0, 10);
+    records = records.slice(0, keep);
     persist();
     if ($('history-dialog').open) historyCards()[records.indexOf(removed)]?.focus({preventScroll: true});
   }});
@@ -242,7 +244,7 @@ $('form').addEventListener('submit', event => {
     // The same inputs again refresh the newest record instead of saving a copy of it.
     records = records[0] && sameInputs(records[0], current)
       ? [structuredClone(current), ...records.slice(1)]
-      : [structuredClone(current), ...records].slice(0, 10);
+      : [structuredClone(current), ...records].slice(0, keep);
     persist(); showResult();
   } catch (error) {
     $('error').textContent = error.message; $('error').hidden = false;
@@ -306,6 +308,9 @@ function download(type) {
 }
 $('download-csv').addEventListener('click', () => download('csv'));
 $('download-txt').addEventListener('click', () => download('txt'));
-try { records = readRecords(localStorage.getItem(storageKey)); }
+try { records = readRecords(localStorage.getItem(storageKey), keep); }
 catch { storageOK = false; }
 sync(); invalidate(); renderHistory();
+
+// Home links a saved calculation as ?open=<id>: show it in History, where Load Calculation is.
+{const openId=new URLSearchParams(location.search).get('open');if(openId&&records.some(r => r.id === openId)){renderHistory();$('history-dialog').showModal();showDetail(openId);window.history.replaceState(null,'',location.pathname);}}

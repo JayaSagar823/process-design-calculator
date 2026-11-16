@@ -24,7 +24,7 @@ try {
       const info = await stat(local);
       if (info.isDirectory()) await stat(join(local, 'index.html'));
     }
-    for (const path of ['index.html', 'steam/index.html', 'ammonia/index.html', 'co2/index.html']) {
+    for (const path of ['index.html', 'calculators/index.html', 'settings/index.html', 'steam/index.html', 'ammonia/index.html', 'co2/index.html']) {
       const html = await readFile(join(output, path), 'utf8');
       for (const match of html.matchAll(/(?:href|src)="([^"]+)"/g)) {
         const target = new URL(match[1], origin + base + path);

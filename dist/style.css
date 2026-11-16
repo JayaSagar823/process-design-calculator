@@ -312,3 +312,35 @@ fieldset.segmented-field>legend{font-size:13px;line-height:18px;font-weight:500;
 .co2-main .result-item{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto}
 #history-content .history-row{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,.9fr) auto;align-items:center}
 @media(max-width:599.95px){#history-content .history-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto}}
+
+/* Three-tab navigation: Home (recent calculations), Calculators, Settings. */
+.app-nav>div{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* Home: recent calculations from every tool, each opening in its tool's History. */
+.recent-list{display:grid;gap:12px}
+@media(min-width:901px){.recent-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.recent-card{display:flex;gap:16px;align-items:flex-start;padding:16px;text-decoration:none;color:var(--ink);background:var(--surface);border-radius:var(--raven-radius-surface);box-shadow:var(--raven-shadow-card),var(--raven-shadow-raised);transition:box-shadow var(--raven-motion-base)}
+.recent-card:hover{box-shadow:var(--raven-shadow-card),0 0 0 1px var(--tf-border-hover)}
+.recent-card .tool-symbol,.recent-card .tool-symbol.co2{width:40px;height:40px;margin:0;flex:none}
+.recent-card .tool-symbol svg{width:22px;height:22px}
+.recent-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+.recent-tool,.recent-date{font-size:12px;line-height:20px;letter-spacing:.4px;color:var(--muted)}
+.recent-headline{font-size:16px;font-weight:600;line-height:24px;letter-spacing:0}
+.recent-detail{font-size:14px;line-height:20px;letter-spacing:.25px;color:var(--muted)}
+.recent-more{margin:16px 0 0;font-size:14px;line-height:20px}
+.recent-more a{color:var(--accent);font-weight:600}
+.recent-empty{background:var(--surface);border-radius:var(--raven-radius-surface);box-shadow:var(--raven-shadow-card),var(--raven-shadow-raised);padding:32px 16px}
+.recent-empty .primary{display:inline-flex;align-items:center;margin-top:16px;text-decoration:none}
+/* Settings: one card per group, rows divided by the hairline. */
+.settings-section{max-width:720px;margin-bottom:16px}
+.settings-section h2{margin:0 0 12px}
+.settings-section>.hint{margin:8px 0 0}
+.settings-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+.settings-list{display:flex;flex-direction:column;margin-top:12px}
+.settings-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-top:1px solid var(--line)}
+.settings-row:first-child{border-top:0}
+.settings-row strong{display:block;font-size:16px;font-weight:600;line-height:24px}
+.settings-row .hint{margin:2px 0 0}
+.settings-row>button{flex:none}
+@media(max-width:599.95px){.settings-fields{grid-template-columns:1fr}}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) :is(.recent-card,.recent-empty){border:1px solid var(--line)}}
+:root[data-theme=dark] :is(.recent-card,.recent-empty){border:1px solid var(--line)}
