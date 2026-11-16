@@ -34,7 +34,7 @@ function offerUpdate(reload){
   document.body.append(notice);
   const trigger=document.createElement('button');trigger.type='button';trigger.className='header-icon update-trigger';
   trigger.setAttribute('aria-label','Update available');trigger.title='Update available';
-  trigger.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6.2 6.2a8 8 0 0 1 13 2.8M4.8 15a8 8 0 0 0 13 2.8"/></svg><span class="header-icon-label">Update</span>';
+  trigger.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg><span class="header-icon-label">Update</span>';
   document.querySelector('.header-actions')?.prepend(trigger);
   trigger.onclick=()=>{notice.hidden=false;$('app-update-now').focus();};
   $('app-update-later').onclick=()=>{notice.hidden=true;trigger.focus();};

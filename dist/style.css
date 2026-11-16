@@ -637,3 +637,7 @@ input:focus,select:focus,textarea:focus,input:focus-visible,select:focus-visible
 .calc-mark #pc-s stop:first-child{stop-opacity:.12!important}
 .calc-mark svg :is(circle,path){stroke-width:1.8}
 .calc-mark svg{filter:drop-shadow(0 1px 1px rgba(var(--raven-cta-shadow-rgb),.3)) drop-shadow(0 3px 6px rgba(var(--raven-cta-bg-rgb),.22))}
+/* Icon strokes (Raven: Lucide at 1.25 for system icons, 1.5 for decorative glyphs): a tool's icon in a Recent or
+   History row is an 18px system icon; only the Home feature tiles and the empty-state glyphs are decorative. */
+.tool-symbol svg{stroke-width:1.25}
+.tool-card .tool-symbol svg,.result-empty>svg{stroke-width:1.5}

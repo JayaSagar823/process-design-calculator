@@ -15,7 +15,7 @@ const fmt=n=>n.toLocaleString('en-US',{maximumFractionDigits:4}),fixed=n=>n.toLo
 const title=r=>r.mode==='pt'?'Saturation temperature':'Saturation pressure',inputTitle=r=>r.mode==='pt'?'Pressure':'Temperature';
 // Shared and downloaded reports keep their own date format; everything on screen goes through dates.mjs.
 const dateLabel=r=>new Date(r.date).toISOString();
-const TRASH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg>';
+const TRASH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
 const tempFromC=(n,u)=>u==='F'?n*9/5+32:u==='K'?n+273.15:n;
 const options=(el,list)=>{el.replaceChildren(...list.map(([v,l])=>{const o=document.createElement('option');o.value=v;o.textContent=l;return o}))};
 let records=[],current=null,selected=null,shareRecord=null,storageOK=true;
